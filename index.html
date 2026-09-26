@@ -639,6 +639,7 @@
       currentSet: 1,
       activeTeam: 'home',
       activePlayer: 21,
+      lastActivePlayer: { home: 21, away: 1 },
       activeSkill: 'Block',
       sets: {
         1: { home: 7, away: 0 },
@@ -656,6 +657,14 @@
       substitutions: {
         home: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
         away: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+      },
+      oppErrors: { home: 0, away: 0 },
+      setOppErrors: {
+        1: { home: 0, away: 0 },
+        2: { home: 0, away: 0 },
+        3: { home: 0, away: 0 },
+        4: { home: 0, away: 0 },
+        5: { home: 0, away: 0 }
       },
       stats: { home: {}, away: {} },
       setStats: {
@@ -676,6 +685,25 @@
       if (!jersey) return false;
       const libs = state.liberos[team] || [];
       return libs.includes(parseInt(jersey));
+    }
+
+    function playerBelongsToTeam(team, jersey) {
+      const j = parseInt(jersey);
+      if (state.rotations[team].includes(j)) return true;
+      if ((state.liberos[team] || []).includes(j)) return true;
+      for (const h of state.history) {
+        if (h.team === team && (h.offJersey === j || h.onJersey === j || h.player === j)) return true;
+      }
+      return false;
+    }
+
+    function addOpponentError(team, setNum) {
+      if (!state.oppErrors) state.oppErrors = { home: 0, away: 0 };
+      if (!state.setOppErrors) {
+        state.setOppErrors = { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } };
+      }
+      state.oppErrors[team] = (state.oppErrors[team] || 0) + 1;
+      state.setOppErrors[setNum][team] = (state.setOppErrors[setNum][team] || 0) + 1;
     }
 
     function getOrCreatePlayerStats(team, jersey, setNum = null) {
@@ -699,11 +727,9 @@
       return setNum ? state.setStats[setNum][team][jersey] : state.stats[team][jersey];
     }
 
-    // Ensure all starters have stats objects
-    [...state.rotations.home, ...state.rotations.away].forEach(num => {
-      getOrCreatePlayerStats('home', num);
-      getOrCreatePlayerStats('away', num);
-    });
+    // Ensure starters are ONLY registered to their own team
+    state.rotations.home.forEach(num => getOrCreatePlayerStats('home', num));
+    state.rotations.away.forEach(num => getOrCreatePlayerStats('away', num));
 
     // Outcomes configuration matching the visual screenshot
     const OUTCOMES = {
@@ -744,6 +770,8 @@
     function selectPlayer(team, jersey) {
       state.activeTeam = team;
       state.activePlayer = parseInt(jersey);
+      if (!state.lastActivePlayer) state.lastActivePlayer = { home: 21, away: 1 };
+      state.lastActivePlayer[team] = parseInt(jersey);
       updateActiveSelectionUI();
     }
 
@@ -756,6 +784,17 @@
     function selectSkill(team, skill) {
       state.activeTeam = team;
       state.activeSkill = skill;
+      
+      // Ensure activePlayer strictly belongs to the chosen team
+      const teamRot = state.rotations[team];
+      const teamLibs = state.liberos[team] || [];
+      const validPlayers = [...teamRot, ...teamLibs];
+      if (!validPlayers.includes(state.activePlayer)) {
+        state.activePlayer = (state.lastActivePlayer && validPlayers.includes(state.lastActivePlayer[team]))
+          ? state.lastActivePlayer[team]
+          : teamRot[0];
+      }
+      
       updateActiveSelectionUI();
       renderOutcomes();
     }
@@ -768,7 +807,12 @@
 
       const ind = document.getElementById('activeSelectionIndicator');
       ind.className = team === 'home' ? "font-bold text-amber-400" : "font-bold text-rose-400";
-      ind.textContent = `${teamName} • #${jersey}${isLib ? ' (L)' : ''} • ${state.activeSkill}`;
+      
+      if (state.activeSkill === 'Opposite Error') {
+        ind.textContent = `${teamName} • Opponent Error (+1 Pt)`;
+      } else {
+        ind.textContent = `${teamName} • #${jersey}${isLib ? ' (L)' : ''} • ${state.activeSkill}`;
+      }
 
       document.getElementById('activeSkillBadge').textContent = state.activeSkill.toUpperCase();
 
@@ -844,9 +888,37 @@
       const curSet = state.sets[state.currentSet];
       const prevScore = { home: curSet.home, away: curSet.away };
       const team = state.activeTeam;
+      const oppTeam = team === 'home' ? 'away' : 'home';
       const playerNum = state.activePlayer;
 
       let pointAwarded = null;
+      let oppErrorAwardedTo = null;
+
+      // Handle direct "Opposite Error" skill (team point from opponent fault)
+      if (state.activeSkill === 'Opposite Error') {
+        curSet[team] += 1;
+        pointAwarded = team;
+        oppErrorAwardedTo = team;
+        addOpponentError(team, state.currentSet);
+
+        state.history.push({
+          type: 'action',
+          set: state.currentSet,
+          team: team,
+          player: null,
+          skill: 'Opposite Error',
+          outcome: outcomeItem.outcome,
+          grade: null,
+          pointAwarded: team,
+          oppErrorAwardedTo: team,
+          prevScore: prevScore
+        });
+
+        updateScoreDisplay();
+        showToast(`${state.teamNames[team]} Point: ${outcomeItem.label}`);
+        saveToLocalStorage();
+        return;
+      }
 
       const targets = [
         getOrCreatePlayerStats(team, playerNum),                   // Match Stats
@@ -889,9 +961,10 @@
         curSet[team] += 1;
         pointAwarded = team;
       } else if (outcomeItem.pointFor === 'opposite') {
-        const oppTeam = team === 'home' ? 'away' : 'home';
         curSet[oppTeam] += 1;
         pointAwarded = oppTeam;
+        oppErrorAwardedTo = oppTeam;
+        addOpponentError(oppTeam, state.currentSet);
       }
 
       state.history.push({
@@ -903,6 +976,7 @@
         outcome: outcomeItem.outcome,
         grade: outcomeItem.grade || null,
         pointAwarded: pointAwarded,
+        oppErrorAwardedTo: oppErrorAwardedTo,
         prevScore: prevScore
       });
 
@@ -984,35 +1058,44 @@
         state.sets[last.set].home = last.prevScore.home;
         state.sets[last.set].away = last.prevScore.away;
 
-        const targets = [
-          getOrCreatePlayerStats(last.team, last.player),
-          getOrCreatePlayerStats(last.team, last.player, last.set)
-        ];
+        if (last.oppErrorAwardedTo) {
+          state.oppErrors[last.oppErrorAwardedTo] = Math.max(0, (state.oppErrors[last.oppErrorAwardedTo] || 0) - 1);
+          if (state.setOppErrors?.[last.set]?.[last.oppErrorAwardedTo]) {
+            state.setOppErrors[last.set][last.oppErrorAwardedTo] = Math.max(0, state.setOppErrors[last.set][last.oppErrorAwardedTo] - 1);
+          }
+        }
 
-        targets.forEach(ps => {
-          if (last.pointAwarded === last.team) ps.pts = Math.max(0, ps.pts - 1);
-          if (last.outcome === 'ace') ps.aces = Math.max(0, ps.aces - 1);
-          if (last.outcome === 'kill') ps.kills = Math.max(0, ps.kills - 1);
-          if (last.outcome === 'block_score') ps.blocks = Math.max(0, ps.blocks - 1);
-          if (last.outcome === 'error' && last.skill === 'Serve') ps.serveErrors = Math.max(0, ps.serveErrors - 1);
-          if (last.skill === 'Attack') {
-            if (last.outcome === 'error') ps.attackErrors = Math.max(0, ps.attackErrors - 1);
-            if (last.outcome === 'blocked') ps.attackBlocked = Math.max(0, (ps.attackBlocked || 1) - 1);
-            if (last.outcome === 'in_play') ps.attackInPlay = Math.max(0, (ps.attackInPlay || 1) - 1);
-            if (last.outcome === 'rebound') ps.attackRebounds = Math.max(0, (ps.attackRebounds || 1) - 1);
-          }
-          if (last.skill === 'Serve' && last.outcome === 'in_play') {
-            ps.serveInPlay = Math.max(0, (ps.serveInPlay || 1) - 1);
-          }
-          if (last.skill === 'Block') {
-            if (last.outcome === 'rebound') ps.blockRebounds = Math.max(0, (ps.blockRebounds || 1) - 1);
-            if (last.outcome === 'touch') ps.blockTouches = Math.max(0, (ps.blockTouches || 1) - 1);
-            if (last.outcome === 'error') ps.blockErrors = Math.max(0, (ps.blockErrors || 1) - 1);
-          }
-          if (last.skill === 'Receive' && last.grade && ps.receives[last.grade] > 0) {
-            ps.receives[last.grade]--;
-          }
-        });
+        if (last.player !== null) {
+          const targets = [
+            getOrCreatePlayerStats(last.team, last.player),
+            getOrCreatePlayerStats(last.team, last.player, last.set)
+          ];
+
+          targets.forEach(ps => {
+            if (last.pointAwarded === last.team) ps.pts = Math.max(0, ps.pts - 1);
+            if (last.outcome === 'ace') ps.aces = Math.max(0, ps.aces - 1);
+            if (last.outcome === 'kill') ps.kills = Math.max(0, ps.kills - 1);
+            if (last.outcome === 'block_score') ps.blocks = Math.max(0, ps.blocks - 1);
+            if (last.outcome === 'error' && last.skill === 'Serve') ps.serveErrors = Math.max(0, ps.serveErrors - 1);
+            if (last.skill === 'Attack') {
+              if (last.outcome === 'error') ps.attackErrors = Math.max(0, ps.attackErrors - 1);
+              if (last.outcome === 'blocked') ps.attackBlocked = Math.max(0, (ps.attackBlocked || 1) - 1);
+              if (last.outcome === 'in_play') ps.attackInPlay = Math.max(0, (ps.attackInPlay || 1) - 1);
+              if (last.outcome === 'rebound') ps.attackRebounds = Math.max(0, (ps.attackRebounds || 1) - 1);
+            }
+            if (last.skill === 'Serve' && last.outcome === 'in_play') {
+              ps.serveInPlay = Math.max(0, (ps.serveInPlay || 1) - 1);
+            }
+            if (last.skill === 'Block') {
+              if (last.outcome === 'rebound') ps.blockRebounds = Math.max(0, (ps.blockRebounds || 1) - 1);
+              if (last.outcome === 'touch') ps.blockTouches = Math.max(0, (ps.blockTouches || 1) - 1);
+              if (last.outcome === 'error') ps.blockErrors = Math.max(0, (ps.blockErrors || 1) - 1);
+            }
+            if (last.skill === 'Receive' && last.grade && ps.receives[last.grade] > 0) {
+              ps.receives[last.grade]--;
+            }
+          });
+        }
       } else if (last.type === 'scoreAdjust') {
         state.sets[last.set].home = last.prevScore.home;
         state.sets[last.set].away = last.prevScore.away;
@@ -1459,6 +1542,9 @@
 
         const dataSource = currentStatsScope === 'match' ? state.stats[team] : (state.setStats[currentStatsScope][team] || {});
         const playerJerseys = Object.keys(dataSource).map(Number).sort((a, b) => a - b);
+        const oppErrors = currentStatsScope === 'match' 
+          ? (state.oppErrors?.[team] || 0) 
+          : (state.setOppErrors?.[currentStatsScope]?.[team] || 0);
 
         let totPts = 0;
         let totKills = 0, totAttErrors = 0, totAttBlocked = 0, totAttInPlay = 0, totAttRebounds = 0, totAttAttempts = 0;
@@ -1466,8 +1552,9 @@
         let totBlocks = 0, totBlockRebounds = 0, totBlockTouches = 0, totBlockErrors = 0;
         let totRecA = 0, totRecB = 0, totRecC = 0, totRecD = 0, totRecE = 0, totRecF = 0, totRecTotal = 0;
 
-        // Filter players who actually have statistics
+        // Filter players: ONLY players legitimately belonging to this team with active stats
         const activeJerseys = playerJerseys.filter(j => {
+          if (!playerBelongsToTeam(team, j)) return false;
           const s = dataSource[j];
           if (!s) return false;
           const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
@@ -1551,11 +1638,27 @@
             tbody.appendChild(tr);
           });
 
+          // Dedicated Opponent Error Row
+          const trOpp = document.createElement('tr');
+          trOpp.className = "bg-slate-900/60 text-slate-300";
+          trOpp.innerHTML = `
+            <td class="p-1 font-bold text-amber-300/90 italic">Opp Errors</td>
+            <td class="p-1 text-center font-bold text-amber-300/90">${oppErrors}</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+          `;
+          tbody.appendChild(trOpp);
+
           const teamPosPct = totRecTotal > 0 ? Math.round(((totRecA + totRecB) / totRecTotal) * 100) + '%' : '-';
+          const totalTeamPts = totPts + oppErrors;
+
           tfoot.innerHTML = `
             <tr>
               <td class="p-1 text-amber-300">Total</td>
-              <td class="p-1 text-center text-amber-300">${totPts}</td>
+              <td class="p-1 text-center text-amber-300">${totalTeamPts}</td>
               <td class="p-1 text-center">${totKills}</td>
               <td class="p-1 text-center">${totAces}</td>
               <td class="p-1 text-center">${totBlocks}</td>
@@ -1584,7 +1687,7 @@
             const s = dataSource[j];
             const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
             const killPct = attTotal > 0 ? Math.round(((s.kills || 0) / attTotal) * 100) + '%' : '-';
-            const eff = attTotal > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / attTotal).toFixed(3) : '-';
+            const eff = attTotal > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / attTotal * 100).toFixed(1) + '%' : '-';
 
             const tr = document.createElement('tr');
             tr.className = "hover:bg-slate-800/50";
@@ -1602,7 +1705,7 @@
           });
 
           const teamKillPct = totAttAttempts > 0 ? Math.round((totKills / totAttAttempts) * 100) + '%' : '-';
-          const teamEff = totAttAttempts > 0 ? ((totKills - totAttErrors - totAttBlocked) / totAttAttempts).toFixed(3) : '-';
+          const teamEff = totAttAttempts > 0 ? (((totKills - totAttErrors - totAttBlocked) / totAttAttempts) * 100).toFixed(1) + '%' : '-';
           tfoot.innerHTML = `
             <tr>
               <td class="p-1 text-amber-300">Total</td>
@@ -1718,7 +1821,7 @@
             const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
             const srvTotal = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
             const recTot = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
-            const eff = attTotal > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / attTotal).toFixed(3) : '-';
+            const eff = attTotal > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / attTotal * 100).toFixed(1) + '%' : '-';
             const posPct = recTot > 0 ? Math.round((((r.A || 0) + (r.B || 0)) / recTot) * 100) + '%' : '-';
             const isLib = isLibero(team, j);
 
@@ -1738,12 +1841,28 @@
             tbody.appendChild(tr);
           });
 
-          const teamEff = totAttAttempts > 0 ? ((totKills - totAttErrors - totAttBlocked) / totAttAttempts).toFixed(3) : '-';
+          // Dedicated Opponent Error Row in All Skills
+          const trOpp = document.createElement('tr');
+          trOpp.className = "bg-slate-900/60 text-slate-300";
+          trOpp.innerHTML = `
+            <td class="p-1 font-bold text-amber-300/90 italic">Opp Errors</td>
+            <td class="p-1 text-center font-bold text-amber-300/90">${oppErrors}</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+            <td class="p-1 text-center text-slate-500">-</td>
+          `;
+          tbody.appendChild(trOpp);
+
+          const teamEff = totAttAttempts > 0 ? (((totKills - totAttErrors - totAttBlocked) / totAttAttempts) * 100).toFixed(1) + '%' : '-';
           const teamPosPct = totRecTotal > 0 ? Math.round(((totRecA + totRecB) / totRecTotal) * 100) + '%' : '-';
+          const totalTeamPts = totPts + oppErrors;
+
           tfoot.innerHTML = `
             <tr>
               <td class="p-1 text-amber-300">Total</td>
-              <td class="p-1 text-center text-amber-300">${totPts}</td>
+              <td class="p-1 text-center text-amber-300">${totalTeamPts}</td>
               <td class="p-1 text-center">${totKills}/${totAttAttempts}</td>
               <td class="p-1 text-center text-cyan-300 text-[10px]">${teamEff}</td>
               <td class="p-1 text-center">${totAces}/${totServes}</td>
@@ -1769,16 +1888,16 @@
         state.sets[s] = { home: 0, away: 0 };
         state.substitutions.home[s] = 0;
         state.substitutions.away[s] = 0;
+        if (state.setOppErrors) state.setOppErrors[s] = { home: 0, away: 0 };
       });
       state.setsWon = { home: 0, away: 0 };
+      state.oppErrors = { home: 0, away: 0 };
       state.history = [];
       state.stats = { home: {}, away: {} };
       state.setStats = { 1: {home:{},away:{}}, 2: {home:{},away:{}}, 3: {home:{},away:{}}, 4: {home:{},away:{}}, 5: {home:{},away:{}} };
 
-      [...state.rotations.home, ...state.rotations.away].forEach(num => {
-        getOrCreatePlayerStats('home', num);
-        getOrCreatePlayerStats('away', num);
-      });
+      state.rotations.home.forEach(num => getOrCreatePlayerStats('home', num));
+      state.rotations.away.forEach(num => getOrCreatePlayerStats('away', num));
 
       cancelResetPrompt();
       renderCurrentStatsView();
@@ -1797,8 +1916,10 @@
         const teamName = state.teamNames[team];
         const dataSource = scope === 'match' ? state.stats[team] : state.setStats[scope][team];
         const playerJerseys = Object.keys(dataSource).map(Number).sort((a, b) => a - b);
-        
+        const oppErrors = scope === 'match' ? (state.oppErrors?.[team] || 0) : (state.setOppErrors?.[scope]?.[team] || 0);
+
         playerJerseys.forEach(jersey => {
+          if (!playerBelongsToTeam(team, jersey)) return;
           const s = dataSource[jersey];
           const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
           const totalRec = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
@@ -1807,11 +1928,14 @@
 
           const totalAtt = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
           const killPct = totalAtt > 0 ? Math.round(((s.kills || 0) / totalAtt) * 100) + '%' : '0%';
-          const eff = totalAtt > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / totalAtt).toFixed(3) : '0.000';
+          const eff = totalAtt > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / totalAtt * 100).toFixed(1) + '%' : '0.0%';
           const totalSrv = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
 
           csv += `"${scopeText}","${teamName}",#${jersey},${role},${s.pts||0},${s.kills||0},${s.attackErrors||0},${s.attackBlocked||0},${s.attackInPlay||0},${s.attackRebounds||0},${totalAtt},${killPct},${eff},${s.aces||0},${s.serveErrors||0},${s.serveInPlay||0},${totalSrv},${s.blocks||0},${s.blockRebounds||0},${s.blockTouches||0},${s.blockErrors||0},${r.A||0},${r.B||0},${r.C||0},${r.D||0},${r.E||0},${r.F||0},${totalRec},${posPct}\n`;
         });
+
+        // Add Opponent Errors row in CSV
+        csv += `"${scopeText}","${teamName}","Opponent Errors","Team",${oppErrors},0,0,0,0,0,0,0%,0.0%,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0%\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1856,6 +1980,8 @@
           if (parsed.liberos) state.liberos = parsed.liberos;
           if (parsed.liberoState) state.liberoState = parsed.liberoState;
           if (parsed.substitutions) state.substitutions = parsed.substitutions;
+          if (parsed.oppErrors) state.oppErrors = parsed.oppErrors;
+          if (parsed.setOppErrors) state.setOppErrors = parsed.setOppErrors;
           if (parsed.setStats) state.setStats = parsed.setStats;
           if (parsed.history) state.history = parsed.history;
           if (parsed.currentSet) state.currentSet = parsed.currentSet;
