@@ -63,7 +63,7 @@
       scrollbar-width: none;
     }
 
-    /* Fixed Court Container: Exactly 2:1 ratio, enlarged to fill space */
+    /* Fixed Court Container: Exactly 2:1 ratio */
     .court-box {
       width: 182px;
       height: 364px;
@@ -76,8 +76,8 @@
       width: 35px;
       height: 35px;
       border-radius: 9999px;
-      font-weight: 800;
-      font-size: 13px;
+      font-weight: 900;
+      font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -87,19 +87,24 @@
 
     /* Selected player glowing ring */
     .court-circle.selected-halo {
-      box-shadow: 0 0 0 3px #ffffff, 0 0 14px rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 0 3px #ffffff, 0 0 16px rgba(255, 255, 255, 0.95);
       transform: scale(1.15);
       z-index: 20;
     }
 
-    /* Side Player number cards */
-    .player-slot-btn {
-      transition: all 0.12s ease;
-    }
-    .player-slot-btn.active-slot {
-      outline: 2px solid #ffffff;
-      box-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
-      transform: scale(1.02);
+    /* Libero specific styling */
+    .libero-badge {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      background: #10b981; /* Emerald 500 */
+      color: white;
+      font-size: 8px;
+      font-weight: bold;
+      padding: 1px 3px;
+      border-radius: 4px;
+      border: 1px solid #ffffff;
+      line-height: 1;
     }
   </style>
 </head>
@@ -116,7 +121,7 @@
         <div class="flex items-center space-x-1">
           <span class="text-[10px] font-black tracking-wider text-slate-400 mr-0.5">SET</span>
           <div class="flex items-center bg-slate-900 border border-slate-700/80 rounded-lg p-0.5">
-            <button onclick="switchSet(1)" id="btnSet1" class="set-btn px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-500 text-slate-950">1</button>
+            <button onclick="switchSet(1)" id="btnSet1" class="set-btn px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-500 text-slate-950 shadow">1</button>
             <button onclick="switchSet(2)" id="btnSet2" class="set-btn px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-400 hover:text-white">2</button>
             <button onclick="switchSet(3)" id="btnSet3" class="set-btn px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-400 hover:text-white">3</button>
             <button onclick="switchSet(4)" id="btnSet4" class="set-btn px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-400 hover:text-white">4</button>
@@ -135,9 +140,6 @@
           <button onclick="openStatsModal()" class="touch-press px-2 py-1 bg-slate-800/90 border border-slate-700 rounded-lg text-[10px] font-bold text-slate-200 flex items-center gap-1 shadow-sm">
             <i data-lucide="bar-chart-2" class="w-3 h-3 text-amber-400"></i> Stats
           </button>
-          <button onclick="downloadCSV()" class="touch-press px-1.5 py-1 bg-slate-800/90 border border-slate-700 rounded-lg text-slate-200 hover:text-white flex items-center shadow-sm">
-            <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-400"></i>
-          </button>
         </div>
       </div>
 
@@ -145,70 +147,44 @@
       <div class="grid grid-cols-2 gap-2">
         
         <!-- HOME TEAM CARD -->
-        <div class="bg-gradient-to-b from-[#0e3b5e] to-[#08243c] border-2 border-cyan-500/80 rounded-2xl p-1.5 px-2 shadow-lg flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1 cursor-pointer overflow-hidden" onclick="openRenameModal('home')">
+        <div class="bg-gradient-to-b from-[#0e3b5e] to-[#08243c] border-2 border-cyan-500/80 rounded-2xl p-1.5 px-2 shadow-lg flex flex-col justify-between relative overflow-hidden">
+          <div class="flex items-center justify-between z-10">
+            <div class="flex items-center gap-1 cursor-pointer" onclick="openRenameModal('home')">
               <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
               <span id="headerHomeName" class="text-[11px] font-extrabold text-white uppercase tracking-wider truncate max-w-[80px]">HOME TEAM</span>
-              <i data-lucide="edit-2" class="w-2.5 h-2.5 text-slate-400"></i>
+              <i data-lucide="edit-2" class="w-2 h-2 text-slate-400"></i>
             </div>
             <span class="bg-[#0b1e33] border border-cyan-600/50 rounded-md px-1.5 py-0.5 text-[9px] font-bold text-cyan-200">
               <span id="homeSetsWon">0</span> Sets
             </span>
           </div>
 
-          <div class="flex items-center justify-between pt-1">
+          <div class="flex items-center justify-between pt-1 z-10">
             <span id="scoreHome" class="text-3xl font-black text-white font-mono leading-none tracking-tight">0</span>
             <div class="flex items-center space-x-1">
               <button onclick="adjustScore('home', 1)" class="touch-press w-7 h-7 rounded-lg bg-cyan-600 hover:bg-cyan-500 border border-cyan-400 text-white font-black text-sm flex items-center justify-center shadow">+</button>
               <button onclick="adjustScore('home', -1)" class="touch-press w-7 h-7 rounded-lg bg-[#0e3352] border border-cyan-700/80 text-cyan-200 font-black text-sm flex items-center justify-center shadow">−</button>
             </div>
           </div>
-          
-          <!-- Sub & Lib row -->
-          <div class="flex items-center justify-between pt-1.5 mt-1 border-t border-cyan-800/60">
-            <span id="homeSubIndicator" class="text-[9px] font-bold font-mono text-cyan-400">Subs: 0/6</span>
-            <div class="flex items-center gap-1">
-              <button onclick="openLiberoModal('home')" class="touch-press px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-500/80 rounded-md text-[9px] font-bold text-emerald-300 flex items-center gap-0.5 shadow-sm">
-                🛡️ Lib
-              </button>
-              <button onclick="openSubModal('home')" class="touch-press px-1.5 py-0.5 bg-cyan-950/80 border border-cyan-600/80 rounded-md text-[9px] font-bold text-cyan-300 flex items-center gap-0.5 shadow-sm">
-                ⇄ Sub
-              </button>
-            </div>
-          </div>
         </div>
 
         <!-- AWAY TEAM CARD -->
-        <div class="bg-gradient-to-b from-[#5c1328] to-[#390b18] border-2 border-rose-500/80 rounded-2xl p-1.5 px-2 shadow-lg flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1 cursor-pointer overflow-hidden" onclick="openRenameModal('away')">
+        <div class="bg-gradient-to-b from-[#5c1328] to-[#390b18] border-2 border-rose-500/80 rounded-2xl p-1.5 px-2 shadow-lg flex flex-col justify-between relative overflow-hidden">
+          <div class="flex items-center justify-between z-10">
+            <div class="flex items-center gap-1 cursor-pointer" onclick="openRenameModal('away')">
               <span id="headerAwayName" class="text-[11px] font-extrabold text-white uppercase tracking-wider truncate max-w-[80px]">AWAY TEAM</span>
-              <i data-lucide="edit-2" class="w-2.5 h-2.5 text-slate-400"></i>
+              <i data-lucide="edit-2" class="w-2 h-2 text-slate-400"></i>
             </div>
             <span class="bg-[#240810] border border-rose-600/50 rounded-md px-1.5 py-0.5 text-[9px] font-bold text-rose-200">
               <span id="awaySetsWon">0</span> Sets
             </span>
           </div>
 
-          <div class="flex items-center justify-between pt-1">
+          <div class="flex items-center justify-between pt-1 z-10">
             <span id="scoreAway" class="text-3xl font-black text-white font-mono leading-none tracking-tight">0</span>
             <div class="flex items-center space-x-1">
               <button onclick="adjustScore('away', 1)" class="touch-press w-7 h-7 rounded-lg bg-rose-600 hover:bg-rose-500 border border-rose-400 text-white font-black text-sm flex items-center justify-center shadow">+</button>
               <button onclick="adjustScore('away', -1)" class="touch-press w-7 h-7 rounded-lg bg-[#3b0d1a] border border-rose-700/80 text-rose-200 font-black text-sm flex items-center justify-center shadow">−</button>
-            </div>
-          </div>
-
-          <!-- Sub & Lib row -->
-          <div class="flex items-center justify-between pt-1.5 mt-1 border-t border-rose-800/60">
-            <span id="awaySubIndicator" class="text-[9px] font-bold font-mono text-rose-400">Subs: 0/6</span>
-            <div class="flex items-center gap-1">
-              <button onclick="openLiberoModal('away')" class="touch-press px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-500/80 rounded-md text-[9px] font-bold text-emerald-300 flex items-center gap-0.5 shadow-sm">
-                🛡️ Lib
-              </button>
-              <button onclick="openSubModal('away')" class="touch-press px-1.5 py-0.5 bg-rose-950/80 border border-rose-600/80 rounded-md text-[9px] font-bold text-rose-300 flex items-center gap-0.5 shadow-sm">
-                ⇄ Sub
-              </button>
             </div>
           </div>
         </div>
@@ -223,170 +199,196 @@
             Home Team • #1 • Serve
           </span>
         </div>
-        <span class="text-[10px] text-slate-500 shrink-0">Tap player & action</span>
+        <span class="text-[10px] text-slate-500 shrink-0">Tap player on court</span>
       </div>
 
     </div>
   </header>
 
-  <!-- ================= MIDDLE SECTION: COURT ONLY ================= -->
-  <section class="shrink-0 w-full px-0.5 py-0 flex items-center justify-center gap-1.5">
+  <!-- ================= MIDDLE SECTION: COURT & SIDEBARS ================= -->
+  <section class="flex-1 w-full flex flex-row items-center justify-between relative overflow-hidden">
     
-    <!-- MIDDLE COLUMN: 2:1 COURT -->
-    <div class="flex-1 flex flex-col items-center justify-center shrink-0">
+    <!-- HOME (LEFT) LIB/SUB SIDEBAR -->
+    <div class="flex flex-col justify-end h-[364px] pb-2 space-y-2.5 w-[80px] shrink-0 pr-2">
+      <div class="text-center">
+        <span id="homeSubIndicator" class="text-[9px] font-bold font-mono text-cyan-400">Subs: 0/6</span>
+      </div>
+      <button onclick="openLiberoModal('home')" class="touch-press h-14 bg-emerald-900/40 border-2 border-emerald-500/80 rounded-xl flex flex-col items-center justify-center shadow-lg w-full">
+        <span class="text-base mb-0.5">🛡️</span>
+        <span class="text-[10px] font-black text-emerald-400 tracking-wider leading-none">LIB</span>
+      </button>
+      <button onclick="openSubModal('home')" class="touch-press h-14 bg-cyan-900/40 border-2 border-cyan-500/80 rounded-xl flex flex-col items-center justify-center shadow-lg w-full">
+        <span class="text-base text-cyan-300 font-black mb-0.5 leading-none">⇄</span>
+        <span class="text-[10px] font-black text-cyan-300 tracking-wider leading-none">SUB</span>
+      </button>
+    </div>
+
+    <!-- MAIN COURT -->
+    <div class="court-box relative rounded-2xl border-2 border-slate-500/80 overflow-hidden shadow-2xl flex flex-col shrink-0 mx-auto">
       
-      <div class="court-box relative rounded-2xl border-2 border-slate-600/80 overflow-hidden shadow-2xl flex flex-col">
+      <!-- AWAY HALF (Top: Crimson Red) -->
+      <div class="relative flex-1 bg-[#be123c] p-2 flex flex-col justify-between">
         
-        <!-- AWAY HALF (Top: Crimson Red) -->
-        <div class="relative flex-1 bg-[#be123c] p-2 flex flex-col justify-between">
+        <!-- Back Row Area: Rot btn + P6 -->
+        <div class="flex justify-between items-center z-10">
+          <button onclick="rotateCourt('away')" class="touch-press px-2 py-1 rounded-lg bg-black/40 border border-white/40 text-white font-extrabold text-[11px] flex items-center gap-1 shadow">
+            <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+            <span>Rot</span>
+          </button>
           
-          <!-- Back Row Area: Rot btn + P6 -->
-          <div class="flex justify-between items-center z-10">
-            <button onclick="rotateCourt('away')" class="touch-press px-2 py-1 rounded-lg bg-black/30 border border-white/40 text-white font-extrabold text-[10px] flex items-center gap-1 shadow">
-              <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
-              <span>Rot</span>
-            </button>
-            
-            <div id="courtCircle_away_6" onclick="selectPlayerByCourtPosition('away', 6)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow font-black">
-              6
-            </div>
-            <div class="w-7"></div>
+          <div id="courtCircle_away_6" onclick="selectPlayerByCourtPosition('away', 6)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow-md relative">
+            6
           </div>
+          <div class="w-10"></div>
+        </div>
 
-          <!-- Mid Back Row: P1, P5 -->
-          <div class="flex justify-between items-center px-1 z-10">
-            <div id="courtCircle_away_1" onclick="selectPlayerByCourtPosition('away', 1)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow font-black">
-              1
-            </div>
-            <div id="courtCircle_away_5" onclick="selectPlayerByCourtPosition('away', 5)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow font-black">
-              5
-            </div>
+        <!-- Mid Back Row: P1, P5 -->
+        <div class="flex justify-between items-center px-1.5 z-10">
+          <div id="courtCircle_away_1" onclick="selectPlayerByCourtPosition('away', 1)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow-md relative">
+            1
           </div>
-
-          <!-- 3m Attack Line -->
-          <div class="absolute bottom-[33.3%] left-0 right-0 border-b-2 border-dashed border-white/60 pointer-events-none"></div>
-
-          <!-- Front Row Area: P2, P3, P4 -->
-          <div class="flex justify-between items-center px-1 pb-1 z-10">
-            <div id="courtCircle_away_2" onclick="selectPlayerByCourtPosition('away', 2)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow font-black">
-              2
-            </div>
-            <div id="courtCircle_away_3" onclick="selectPlayerByCourtPosition('away', 3)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow font-black">
-              3
-            </div>
-            <div id="courtCircle_away_4" onclick="selectPlayerByCourtPosition('away', 4)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow font-black">
-              4
-            </div>
+          <div id="courtCircle_away_5" onclick="selectPlayerByCourtPosition('away', 5)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow-md relative">
+            5
           </div>
         </div>
 
-        <!-- Center Net with Yellow Badge -->
-        <div class="relative h-2.5 bg-white flex items-center justify-between px-1 z-20 shadow-md">
-          <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
-          <span class="text-[7.5px] font-black bg-amber-400 text-slate-950 px-1 rounded-sm uppercase tracking-wider">NET</span>
-          <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
-        </div>
+        <!-- 3m Attack Line -->
+        <div class="absolute bottom-[33.3%] left-0 right-0 border-b-[3px] border-dashed border-white/60 pointer-events-none"></div>
 
-        <!-- HOME HALF (Bottom: Cyan Blue) -->
-        <div class="relative flex-1 bg-[#0284c7] p-2 flex flex-col justify-between">
-          
-          <!-- Front Row Area: P4, P3, P2 -->
-          <div class="flex justify-between items-center px-1 pt-1 z-10">
-            <div id="courtCircle_home_4" onclick="selectPlayerByCourtPosition('home', 4)" class="court-circle bg-[#facc15] text-slate-950 shadow font-black">
-              4
-            </div>
-            <div id="courtCircle_home_3" onclick="selectPlayerByCourtPosition('home', 3)" class="court-circle bg-[#facc15] text-slate-950 shadow font-black">
-              3
-            </div>
-            <div id="courtCircle_home_2" onclick="selectPlayerByCourtPosition('home', 2)" class="court-circle bg-[#facc15] text-slate-950 shadow font-black">
-              2
-            </div>
+        <!-- Front Row Area: P2, P3, P4 -->
+        <div class="flex justify-between items-center px-1 pb-1 z-10">
+          <div id="courtCircle_away_2" onclick="selectPlayerByCourtPosition('away', 2)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow-md relative">
+            2
           </div>
-
-          <!-- 3m Attack Line -->
-          <div class="absolute top-[33.3%] left-0 right-0 border-b-2 border-dashed border-white/60 pointer-events-none"></div>
-
-          <!-- Mid Back Row: P5, P1 -->
-          <div class="flex justify-between items-center px-1 z-10">
-            <div id="courtCircle_home_5" onclick="selectPlayerByCourtPosition('home', 5)" class="court-circle bg-[#facc15] text-slate-950 shadow font-black">
-              5
-            </div>
-            <div id="courtCircle_home_1" onclick="selectPlayerByCourtPosition('home', 1)" class="court-circle bg-[#facc15] text-slate-950 shadow font-black">
-              1
-            </div>
+          <div id="courtCircle_away_3" onclick="selectPlayerByCourtPosition('away', 3)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow-md relative">
+            3
           </div>
-
-          <!-- Deep Back Row: P6 + Rot btn -->
-          <div class="flex justify-between items-center z-10">
-            <div class="w-7"></div>
-            <div id="courtCircle_home_6" onclick="selectPlayerByCourtPosition('home', 6)" class="court-circle bg-[#facc15] text-slate-950 shadow font-black">
-              6
-            </div>
-            <button onclick="rotateCourt('home')" class="touch-press px-2 py-1 rounded-lg bg-black/30 border border-white/40 text-white font-extrabold text-[10px] flex items-center gap-1 shadow">
-              <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
-              <span>Rot</span>
-            </button>
+          <div id="courtCircle_away_4" onclick="selectPlayerByCourtPosition('away', 4)" class="court-circle bg-[#d8b4fe] text-[#581c87] shadow-md relative">
+            4
           </div>
         </div>
-
       </div>
 
+      <!-- Center Net with Yellow Badge -->
+      <div class="relative h-3 bg-white flex items-center justify-between px-1 z-20 shadow-md">
+        <span class="w-2 h-2 rounded-full bg-red-600"></span>
+        <span class="text-[8px] font-black bg-amber-400 text-slate-950 px-1.5 rounded-sm uppercase tracking-wider">NET</span>
+        <span class="w-2 h-2 rounded-full bg-red-600"></span>
+      </div>
+
+      <!-- HOME HALF (Bottom: Cyan Blue) -->
+      <div class="relative flex-1 bg-[#0284c7] p-2 flex flex-col justify-between">
+        
+        <!-- Front Row Area: P4, P3, P2 -->
+        <div class="flex justify-between items-center px-1 pt-1 z-10">
+          <div id="courtCircle_home_4" onclick="selectPlayerByCourtPosition('home', 4)" class="court-circle bg-[#facc15] text-slate-950 shadow-md relative">
+            4
+          </div>
+          <div id="courtCircle_home_3" onclick="selectPlayerByCourtPosition('home', 3)" class="court-circle bg-[#facc15] text-slate-950 shadow-md relative">
+            3
+          </div>
+          <div id="courtCircle_home_2" onclick="selectPlayerByCourtPosition('home', 2)" class="court-circle bg-[#facc15] text-slate-950 shadow-md relative">
+            2
+          </div>
+        </div>
+
+        <!-- 3m Attack Line -->
+        <div class="absolute top-[33.3%] left-0 right-0 border-b-[3px] border-dashed border-white/60 pointer-events-none"></div>
+
+        <!-- Mid Back Row: P5, P1 -->
+        <div class="flex justify-between items-center px-1.5 z-10">
+          <div id="courtCircle_home_5" onclick="selectPlayerByCourtPosition('home', 5)" class="court-circle bg-[#facc15] text-slate-950 shadow-md relative">
+            5
+          </div>
+          <div id="courtCircle_home_1" onclick="selectPlayerByCourtPosition('home', 1)" class="court-circle bg-[#facc15] text-slate-950 shadow-md relative">
+            1
+          </div>
+        </div>
+
+        <!-- Deep Back Row: P6 + Rot btn -->
+        <div class="flex justify-between items-center z-10">
+          <div class="w-10"></div>
+          <div id="courtCircle_home_6" onclick="selectPlayerByCourtPosition('home', 6)" class="court-circle bg-[#facc15] text-slate-950 shadow-md relative">
+            6
+          </div>
+          <button onclick="rotateCourt('home')" class="touch-press px-2 py-1 rounded-lg bg-black/40 border border-white/40 text-white font-extrabold text-[11px] flex items-center gap-1 shadow">
+            <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+            <span>Rot</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- AWAY (RIGHT) LIB/SUB SIDEBAR -->
+    <div class="flex flex-col justify-start h-[364px] pt-2 space-y-2.5 w-[80px] shrink-0 pl-2">
+      <button onclick="openLiberoModal('away')" class="touch-press h-14 bg-emerald-900/40 border-2 border-emerald-500/80 rounded-xl flex flex-col items-center justify-center shadow-lg w-full">
+        <span class="text-base mb-0.5">🛡️</span>
+        <span class="text-[10px] font-black text-emerald-400 tracking-wider leading-none">LIB</span>
+      </button>
+      <button onclick="openSubModal('away')" class="touch-press h-14 bg-rose-900/40 border-2 border-rose-500/80 rounded-xl flex flex-col items-center justify-center shadow-lg w-full">
+        <span class="text-base text-rose-300 font-black mb-0.5 leading-none">⇄</span>
+        <span class="text-[10px] font-black text-rose-300 tracking-wider leading-none">SUB</span>
+      </button>
+      <div class="text-center pt-0.5">
+        <span id="awaySubIndicator" class="text-[9px] font-bold font-mono text-rose-400">Subs: 0/6</span>
+      </div>
     </div>
 
   </section>
 
   <!-- ================= BOTTOM SECTION: ACTIONS & OUTCOMES ================= -->
-  <footer class="shrink-0 w-full px-0.5 pb-1 pt-0.5 z-20">
+  <footer class="shrink-0 w-full px-0.5 pb-2 pt-0 z-20">
     <div class="grid grid-cols-4 gap-1.5 h-[178px]">
       
-      <!-- Home Action Buttons Column (Vibrant Blue) -->
-      <div class="col-span-1 flex flex-col justify-between gap-1">
-        <button onclick="selectSkill('home', 'Serve')" id="btnAction_home_Serve" class="touch-press flex-1 rounded-xl text-xs font-black bg-cyan-600 text-white border border-cyan-400 shadow flex items-center justify-center">
+      <!-- Home Action Buttons (Cyan) -->
+      <div class="col-span-1 flex flex-col justify-between gap-1.5">
+        <button onclick="selectSkill('home', 'Serve')" id="btnAction_home_Serve" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center">
           Serve
         </button>
-        <button onclick="selectSkill('home', 'Receive')" id="btnAction_home_Receive" class="touch-press flex-1 rounded-xl text-xs font-black bg-cyan-600 text-white border border-cyan-400 shadow flex items-center justify-center">
+        <button onclick="selectSkill('home', 'Receive')" id="btnAction_home_Receive" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center">
           Receive
         </button>
-        <button onclick="selectSkill('home', 'Attack')" id="btnAction_home_Attack" class="touch-press flex-1 rounded-xl text-xs font-black bg-cyan-600 text-white border border-cyan-400 shadow flex items-center justify-center">
+        <button onclick="selectSkill('home', 'Attack')" id="btnAction_home_Attack" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center">
           Attack
         </button>
-        <button onclick="selectSkill('home', 'Block')" id="btnAction_home_Block" class="touch-press flex-1 rounded-xl text-xs font-black bg-cyan-600 text-white border border-cyan-400 shadow flex items-center justify-center">
+        <button onclick="selectSkill('home', 'Block')" id="btnAction_home_Block" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center">
           Block
         </button>
-        <button onclick="selectSkill('home', 'Opposite Error')" id="btnAction_home_Opposite_Error" class="touch-press flex-1 rounded-xl text-[11px] font-black bg-cyan-600 text-white border border-cyan-400 shadow flex items-center justify-center leading-tight">
+        <button onclick="selectSkill('home', 'Opposite Error')" id="btnAction_home_Opposite_Error" class="touch-press flex-1 rounded-xl text-[11px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center leading-tight text-center">
           Opp Error
         </button>
       </div>
 
       <!-- Center Outcomes Box -->
-      <div class="col-span-2 bg-[#090d16] border border-slate-800 rounded-2xl p-2 flex flex-col justify-between shadow-xl">
-        <div class="flex items-center justify-between pb-1 border-b border-slate-800/80">
+      <div class="col-span-2 bg-[#090d16] border border-slate-700 rounded-2xl p-2 flex flex-col shadow-xl">
+        <div class="flex items-center justify-between pb-1.5 border-b border-slate-800">
           <span class="text-[10px] font-black text-slate-400 tracking-wider uppercase">OUTCOMES</span>
           <span id="activeSkillBadge" class="text-[10px] font-black text-slate-950 bg-amber-400 px-2 py-0.5 rounded shadow">
             SERVE
           </span>
         </div>
 
-        <div id="outcomesContainer" class="flex-1 flex flex-col justify-between py-1 gap-1">
-          <!-- Populated dynamically by renderOutcomes() -->
+        <div id="outcomesContainer" class="flex-1 flex flex-col justify-center py-1.5 gap-1.5">
+          <!-- Populated dynamically -->
         </div>
       </div>
 
-      <!-- Away Action Buttons Column (Vibrant Crimson Red) -->
-      <div class="col-span-1 flex flex-col justify-between gap-1">
-        <button onclick="selectSkill('away', 'Serve')" id="btnAction_away_Serve" class="touch-press flex-1 rounded-xl text-xs font-black bg-rose-600 text-white border border-rose-400 shadow flex items-center justify-center">
+      <!-- Away Action Buttons (Crimson) -->
+      <div class="col-span-1 flex flex-col justify-between gap-1.5">
+        <button onclick="selectSkill('away', 'Serve')" id="btnAction_away_Serve" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center">
           Serve
         </button>
-        <button onclick="selectSkill('away', 'Receive')" id="btnAction_away_Receive" class="touch-press flex-1 rounded-xl text-xs font-black bg-rose-600 text-white border border-rose-400 shadow flex items-center justify-center">
+        <button onclick="selectSkill('away', 'Receive')" id="btnAction_away_Receive" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center">
           Receive
         </button>
-        <button onclick="selectSkill('away', 'Attack')" id="btnAction_away_Attack" class="touch-press flex-1 rounded-xl text-xs font-black bg-rose-600 text-white border border-rose-400 shadow flex items-center justify-center">
+        <button onclick="selectSkill('away', 'Attack')" id="btnAction_away_Attack" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center">
           Attack
         </button>
-        <button onclick="selectSkill('away', 'Block')" id="btnAction_away_Block" class="touch-press flex-1 rounded-xl text-xs font-black bg-rose-600 text-white border border-rose-400 shadow flex items-center justify-center">
+        <button onclick="selectSkill('away', 'Block')" id="btnAction_away_Block" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center">
           Block
         </button>
-        <button onclick="selectSkill('away', 'Opposite Error')" id="btnAction_away_Opposite_Error" class="touch-press flex-1 rounded-xl text-[11px] font-black bg-rose-600 text-white border border-rose-400 shadow flex items-center justify-center leading-tight">
+        <button onclick="selectSkill('away', 'Opposite Error')" id="btnAction_away_Opposite_Error" class="touch-press flex-1 rounded-xl text-[11px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center leading-tight text-center">
           Opp Error
         </button>
       </div>
@@ -394,54 +396,52 @@
     </div>
   </footer>
 
+
   <!-- ================= MODALS ================= -->
 
-  <!-- 1. Match Stats Modal -->
+  <!-- Stats Modal -->
   <div id="statsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-3 flex items-center justify-center">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col p-4 shadow-2xl">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[95vh] flex flex-col p-4 shadow-2xl">
       <div class="flex items-center justify-between pb-2 border-b border-slate-800">
         <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
-          <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i> Match Statistics
+          <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i> Statistics
         </h3>
         <button onclick="closeStatsModal()" class="text-slate-400 hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- View Selector Toggle -->
-      <div class="flex flex-col gap-2 pt-2 pb-1 border-b border-slate-800">
-        
-        <!-- Scope Selector (Match vs Sets) -->
-        <div id="statsScopeRow" class="flex items-center gap-1 overflow-x-auto hide-scrollbar pb-1.5 border-b border-slate-800/80">
-          <button onclick="switchStatsScope('match')" id="btnScope_match" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-amber-500 text-slate-950 shrink-0 shadow">Match (All)</button>
-          <button onclick="switchStatsScope(1)" id="btnScope_1" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 1</button>
-          <button onclick="switchStatsScope(2)" id="btnScope_2" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 2</button>
-          <button onclick="switchStatsScope(3)" id="btnScope_3" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 3</button>
-          <button onclick="switchStatsScope(4)" id="btnScope_4" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 4</button>
-          <button onclick="switchStatsScope(5)" id="btnScope_5" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 5</button>
-        </div>
-
-        <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
-          <button onclick="switchStatsView('summary')" id="btnStatsViewSummary" class="py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow">
-            <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i> Summary
-          </button>
-          <button onclick="switchStatsView('detailed')" id="btnStatsViewDetailed" class="py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white">
-            <i data-lucide="table" class="w-3.5 h-3.5"></i> Detailed Breakdown
-          </button>
-        </div>
-
-        <!-- Detailed Skill Filter Pills -->
-        <div id="detailedTabsRow" class="hidden flex items-center gap-1 overflow-x-auto hide-scrollbar pt-0.5">
-          <button onclick="switchDetailedCategory('all')" id="btnDetailTab_all" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-cyan-600 text-white shrink-0">All Skills</button>
-          <button onclick="switchDetailedCategory('attack')" id="btnDetailTab_attack" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Attack (Eff%)</button>
-          <button onclick="switchDetailedCategory('serve_rec')" id="btnDetailTab_serve_rec" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Serve & Rec (A–F)</button>
-          <button onclick="switchDetailedCategory('block')" id="btnDetailTab_block" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Block & Touch</button>
-        </div>
+      <!-- Scope Row (Match vs Sets) -->
+      <div id="statsScopeRow" class="flex items-center gap-1 overflow-x-auto hide-scrollbar pt-2 pb-2 border-b border-slate-800/80">
+        <button onclick="switchStatsScope('match')" id="btnScope_match" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-amber-500 text-slate-950 shrink-0 shadow">Match (All)</button>
+        <button onclick="switchStatsScope(1)" id="btnScope_1" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 1</button>
+        <button onclick="switchStatsScope(2)" id="btnScope_2" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 2</button>
+        <button onclick="switchStatsScope(3)" id="btnScope_3" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 3</button>
+        <button onclick="switchStatsScope(4)" id="btnScope_4" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 4</button>
+        <button onclick="switchStatsScope(5)" id="btnScope_5" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 5</button>
       </div>
 
-      <!-- Stats Tables Container -->
-      <div class="overflow-y-auto flex-1 my-2 pr-1 hide-scrollbar">
-        <!-- Home Team Table -->
+      <!-- View Selector -->
+      <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800 mt-2">
+        <button onclick="switchStatsView('summary')" id="btnStatsViewSummary" class="py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow">
+          <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i> Summary
+        </button>
+        <button onclick="switchStatsView('detailed')" id="btnStatsViewDetailed" class="py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white">
+          <i data-lucide="table" class="w-3.5 h-3.5"></i> Detailed
+        </button>
+      </div>
+
+      <!-- Detailed Skill Tabs -->
+      <div id="detailedTabsRow" class="hidden flex items-center gap-1 overflow-x-auto hide-scrollbar pt-2">
+        <button onclick="switchDetailedCategory('all')" id="btnDetailTab_all" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-cyan-600 text-white shrink-0">All Skills</button>
+        <button onclick="switchDetailedCategory('attack')" id="btnDetailTab_attack" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Attack (Eff%)</button>
+        <button onclick="switchDetailedCategory('serve_rec')" id="btnDetailTab_serve_rec" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Serve & Rec (A–E)</button>
+        <button onclick="switchDetailedCategory('block')" id="btnDetailTab_block" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Block & Touch</button>
+      </div>
+
+      <!-- Data Tables -->
+      <div class="overflow-y-auto flex-1 my-3 pr-1 hide-scrollbar">
+        <!-- Home Table -->
         <div class="mb-4">
           <h4 id="statsHomeTeamHeader" class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1">Home Team Stats</h4>
           <div class="overflow-x-auto hide-scrollbar rounded-xl border border-slate-800 bg-slate-950/70 p-1">
@@ -453,7 +453,7 @@
           </div>
         </div>
 
-        <!-- Away Team Table -->
+        <!-- Away Table -->
         <div>
           <h4 id="statsAwayTeamHeader" class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-1">Away Team Stats</h4>
           <div class="overflow-x-auto hide-scrollbar rounded-xl border border-slate-800 bg-slate-950/70 p-1">
@@ -466,14 +466,14 @@
         </div>
       </div>
 
-      <!-- Modal Footer -->
+      <!-- Footer -->
       <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
         <button onclick="confirmResetAll()" id="btnResetMatch" class="touch-press px-2.5 py-1.5 rounded-lg bg-rose-950/70 border border-rose-800 text-rose-300 text-xs font-semibold">
-          Reset Match
+          Reset
         </button>
         <div class="flex items-center space-x-1.5">
           <button onclick="downloadCSV()" class="touch-press px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1 shadow">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i> Export CSV
+            <i data-lucide="download" class="w-3.5 h-3.5"></i> Export
           </button>
           <button onclick="closeStatsModal()" class="touch-press px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold">
             Close
@@ -481,18 +481,40 @@
         </div>
       </div>
 
-      <!-- Custom Reset Confirmation Banner -->
+      <!-- Reset Confirmation -->
       <div id="resetConfirmPanel" class="hidden mt-2 p-2 rounded-lg bg-rose-900/40 border border-rose-700/80 flex items-center justify-between">
-        <span class="text-[11px] text-rose-200 font-medium">Reset all match stats?</span>
+        <span class="text-[11px] text-rose-200 font-medium">Reset all stats?</span>
         <div class="flex space-x-1.5">
-          <button onclick="executeResetAll()" class="touch-press px-2 py-0.5 rounded bg-rose-600 text-white text-[11px] font-bold">Yes, Reset</button>
+          <button onclick="executeResetAll()" class="touch-press px-2 py-0.5 rounded bg-rose-600 text-white text-[11px] font-bold">Yes</button>
           <button onclick="cancelResetPrompt()" class="touch-press px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px]">Cancel</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 2. Substitution Modal -->
+  <!-- Libero Modal (Rebuilt to match UI mockups) -->
+  <div id="liberoModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-3 flex items-center justify-center">
+    <div class="bg-[#353945] border border-slate-600 rounded-2xl w-full max-w-[320px] shadow-2xl overflow-hidden flex flex-col">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-600/50 bg-[#353945]">
+        <h3 id="liberoModalTitle" class="font-black text-emerald-400 text-sm tracking-wide">
+          Libero (HOME TEAM)
+        </h3>
+        <button onclick="closeLiberoModal()" class="text-slate-400 hover:text-white touch-press">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Dynamic Body -->
+      <div class="p-4 flex flex-col gap-4 bg-[#353945]" id="liberoModalBody">
+        <!-- Injected via JS based on Active vs Inactive State -->
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Substitution Modal -->
   <div id="subModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-3 flex items-center justify-center">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -521,40 +543,7 @@
     </div>
   </div>
 
-  <!-- 3. Libero Modal -->
-  <div id="liberoModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-3 flex items-center justify-center">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-        <h3 id="liberoModalTitle" class="font-bold text-emerald-400 text-sm flex items-center gap-1.5">
-          <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i> Libero Replacement
-        </h3>
-        <button onclick="closeLiberoModal()" class="text-slate-400 hover:text-white p-1">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <div id="activeLiberoBanner" class="p-2 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-300"></div>
-
-      <div id="liberoSwapContainer" class="hidden flex items-center justify-between p-2 rounded-xl bg-emerald-950/40 border border-emerald-900/60 mt-1">
-        <span class="text-[10px] text-emerald-300/80 font-medium">Swap with other Libero:</span>
-        <button id="btnLiberoSwap" onclick="executeLiberoToLiberoSwap()" class="px-2 py-1 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-lg text-[10px] shadow">
-          Swap to #L2
-        </button>
-      </div>
-
-      <div id="liberoTargetGridContainer">
-        <label class="block text-[11px] text-slate-400 mb-1 font-semibold mt-2">Replace Back-Row Player (P1, P6, P5):</label>
-        <div id="liberoTargetGrid" class="grid grid-cols-3 gap-1.5"></div>
-      </div>
-
-      <div id="liberoActionRow" class="flex items-center justify-end pt-2 border-t border-slate-800 mt-3">
-        <button onclick="closeLiberoModal()" class="touch-press px-3 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-xs font-semibold">Cancel</button>
-        <button id="btnConfirmLibero" onclick="executeLiberoSwap()" class="touch-press px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow ml-2">Confirm Libero</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 4. Lineup / Teams Modal -->
+  <!-- Lineup / Teams Modal -->
   <div id="lineupModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-3 flex items-center justify-center">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto hide-scrollbar p-4 shadow-2xl flex flex-col space-y-3">
       <div class="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -612,998 +601,846 @@
 
       <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
         <button onclick="closeLineupModal()" class="touch-press px-3 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-xs font-semibold">Cancel</button>
-        <button onclick="saveLineupSetup()" class="touch-press px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold shadow">Save Lineup</button>
+        <button onclick="saveLineup()" class="touch-press px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold shadow">Save Lineup</button>
       </div>
     </div>
-  </div>
-
-  <!-- 5. Fast Rename Modal -->
-  <div id="renameModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-3 flex items-center justify-center">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xs p-4 shadow-2xl flex flex-col space-y-3">
-      <h3 id="renameModalTitle" class="font-bold text-white text-sm">Rename Team</h3>
-      <input type="text" id="renameInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold text-center focus:outline-none focus:border-cyan-500">
-      <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
-        <button onclick="closeRenameModal()" class="touch-press px-3 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-xs font-semibold">Cancel</button>
-        <button onclick="executeRename()" class="touch-press px-4 py-1.5 bg-cyan-600 text-white rounded-lg text-xs font-bold shadow">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- In-App Floating Toast Notification -->
-  <div id="toastNotification" class="pointer-events-none fixed bottom-3 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-slate-700 text-white text-xs px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 opacity-0 transition-opacity duration-200">
-    <span id="toastText">Action Recorded</span>
   </div>
 
   <script>
-    // State management
-    const state = {
-      teamNames: { home: 'HOME TEAM', away: 'AWAY TEAM' },
-      liberos: { home: [], away: [] },
-      liberoState: {
-        home: { active: false, liberoJersey: null, replacedJersey: null, posIndex: null },
-        away: { active: false, liberoJersey: null, replacedJersey: null, posIndex: null }
-      },
-      currentSet: 1,
-      activeTeam: 'home',
-      activePlayer: 21,
-      lastActivePlayer: { home: 21, away: 1 },
-      activeSkill: 'Block',
-      sets: {
-        1: { home: 7, away: 0 },
-        2: { home: 0, away: 0 },
-        3: { home: 0, away: 0 },
-        4: { home: 0, away: 0 },
-        5: { home: 0, away: 0 }
-      },
-      setsWon: { home: 0, away: 0 },
-      rotations: {
-        // [P1, P6, P5, P4, P3, P2]
-        home: [21, 14, 15, 1, 9, 20],
-        away: [1, 6, 5, 4, 3, 2]
-      },
-      substitutions: {
-        home: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-        away: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-      },
-      oppErrors: { home: 0, away: 0 },
-      setOppErrors: {
-        1: { home: 0, away: 0 },
-        2: { home: 0, away: 0 },
-        3: { home: 0, away: 0 },
-        4: { home: 0, away: 0 },
-        5: { home: 0, away: 0 }
-      },
-      stats: { home: {}, away: {} },
-      setStats: {
-        1: { home: {}, away: {} }, 2: { home: {}, away: {} }, 3: { home: {}, away: {} }, 4: { home: {}, away: {} }, 5: { home: {}, away: {} }
-      },
-      history: []
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    /* ================= CORE STATE ================= */
+    let currentSet = 1;
+    
+    let scores = {
+      1: { home: 0, away: 0 },
+      2: { home: 0, away: 0 },
+      3: { home: 0, away: 0 },
+      4: { home: 0, away: 0 },
+      5: { home: 0, away: 0 }
+    };
+    
+    let setsWon = { home: 0, away: 0 };
+    let subsUsed = {
+      1: { home: 0, away: 0 },
+      2: { home: 0, away: 0 },
+      3: { home: 0, away: 0 },
+      4: { home: 0, away: 0 },
+      5: { home: 0, away: 0 }
     };
 
-    let currentStatsView = 'summary';
-    let detailedStatsCategory = 'all';
-    let currentStatsScope = 'match';
+    let teamNames = { home: "HOME TEAM", away: "AWAY TEAM" };
 
-    const POS_TO_INDEX = { 1: 0, 6: 1, 5: 2, 4: 3, 3: 4, 2: 5 };
-    const INDEX_TO_POS = [1, 6, 5, 4, 3, 2];
-    const BACK_ROW_POSITIONS = [1, 6, 5];
+    // Player Lineups (Position 1-6 map to Jerseys)
+    let lineups = {
+      home: { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 },
+      away: { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 }
+    };
+    
+    // Configured Liberos
+    let liberos = {
+      home: { L1: null, L2: null },
+      away: { L1: null, L2: null }
+    };
 
-    function isLibero(team, jersey) {
-      if (!jersey) return false;
-      const libs = state.liberos[team] || [];
-      return libs.includes(parseInt(jersey));
-    }
+    // Active Libero State (tracks who they replaced)
+    let activeLibero = {
+      home: { onCourt: false, jersey: null, replacedPosition: null, replacedJersey: null },
+      away: { onCourt: false, jersey: null, replacedPosition: null, replacedJersey: null }
+    };
 
-    function playerBelongsToTeam(team, jersey) {
-      const j = parseInt(jersey);
-      if (state.rotations[team].includes(j)) return true;
-      if ((state.liberos[team] || []).includes(j)) return true;
-      for (const h of state.history) {
-        if (h.team === team && (h.offJersey === j || h.onJersey === j || h.player === j)) return true;
-      }
-      return false;
-    }
+    let playerJerseys = { home: new Set([1,2,3,4,5,6]), away: new Set([1,2,3,4,5,6]) };
+    
+    let activeSelection = { team: 'home', position: 1, skill: 'Serve' };
+    
+    // Undo Stack
+    let historyStack = [];
 
-    function addOpponentError(team, setNum) {
-      if (!state.oppErrors) state.oppErrors = { home: 0, away: 0 };
-      if (!state.setOppErrors) {
-        state.setOppErrors = { 1: { home: 0, away: 0 }, 2: { home: 0, away: 0 }, 3: { home: 0, away: 0 }, 4: { home: 0, away: 0 }, 5: { home: 0, away: 0 } };
-      }
-      state.oppErrors[team] = (state.oppErrors[team] || 0) + 1;
-      state.setOppErrors[setNum][team] = (state.setOppErrors[setNum][team] || 0) + 1;
-    }
+    // Stats View State
+    let currentStatsScope = 'match'; // 'match' or 1, 2, 3, 4, 5
+    let currentStatsView = 'summary'; // 'summary' or 'detailed'
+    let currentDetailedCategory = 'all'; // 'all', 'attack', 'serve_rec', 'block'
 
-    function getOrCreatePlayerStats(team, jersey, setNum = null) {
-      const template = () => ({
-        pts: 0, kills: 0, attackErrors: 0, attackBlocked: 0, attackInPlay: 0, attackRebounds: 0,
-        aces: 0, serveErrors: 0, serveInPlay: 0,
-        blocks: 0, blockRebounds: 0, blockTouches: 0, blockErrors: 0,
-        receives: { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 }
-      });
-
-      if (!state.stats[team][jersey]) state.stats[team][jersey] = template();
-      
-      if (!state.setStats) {
-        state.setStats = { 1: {home:{},away:{}}, 2: {home:{},away:{}}, 3: {home:{},away:{}}, 4: {home:{},away:{}}, 5: {home:{},away:{}} };
-      }
-      
-      for (let i = 1; i <= 5; i++) {
-        if (!state.setStats[i][team][jersey]) state.setStats[i][team][jersey] = template();
-      }
-
-      return setNum ? state.setStats[setNum][team][jersey] : state.stats[team][jersey];
-    }
-
-    // Ensure starters are ONLY registered to their own team
-    state.rotations.home.forEach(num => getOrCreatePlayerStats('home', num));
-    state.rotations.away.forEach(num => getOrCreatePlayerStats('away', num));
-
-    // Outcomes configuration matching the visual screenshot
-    const OUTCOMES = {
+    /* ================= OUTCOMES CONFIGURATION ================= */
+    const OUTCOMES_CONFIG = {
       'Serve': [
-        { label: 'Ace (+1 Pt)', outcome: 'ace', pointFor: 'same', color: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
-        { label: 'In Play', outcome: 'in_play', pointFor: null, color: 'bg-slate-800 hover:bg-slate-700 text-slate-200' },
-        { label: 'Error (+1 Opp)', outcome: 'error', pointFor: 'opposite', color: 'bg-rose-700 hover:bg-rose-600 text-white' }
+        { label: 'Score (+1 Pt)', bg: 'bg-emerald-600', text: 'text-white' },
+        { label: 'In Play', bg: 'bg-cyan-600', text: 'text-white' },
+        { label: 'Error (+1 Opp)', bg: 'bg-rose-600', text: 'text-white' }
       ],
       'Receive': [
-        { label: 'A • Perfect (3)', outcome: 'rec_A', grade: 'A', pointFor: null, color: 'bg-emerald-600 text-white' },
-        { label: 'B • Positive (2)', outcome: 'rec_B', grade: 'B', pointFor: null, color: 'bg-lime-600 text-white' },
-        { label: 'C • Medium (1)', outcome: 'rec_C', grade: 'C', pointFor: null, color: 'bg-amber-600 text-white' },
-        { label: 'D • Scramble (0)', outcome: 'rec_D', grade: 'D', pointFor: null, color: 'bg-orange-600 text-white' },
-        { label: 'E • Overpass', outcome: 'rec_E', grade: 'E', pointFor: null, color: 'bg-rose-600 text-white' },
-        { label: 'F • Ace Conceded (+1 Opp)', outcome: 'rec_F', grade: 'F', pointFor: 'opposite', color: 'bg-rose-800 text-white' }
+        { label: 'A • Perfect (3)', bg: 'bg-emerald-600', text: 'text-white' },
+        { label: 'B • Positive (2)', bg: 'bg-lime-600', text: 'text-white' },
+        { label: 'C • Medium (1)', bg: 'bg-amber-500', text: 'text-slate-950' },
+        { label: 'D • Poor', bg: 'bg-orange-500', text: 'text-white' },
+        { label: 'E • Error', bg: 'bg-rose-600', text: 'text-white', colSpan: 2 } // Does NOT award +1 Opp anymore
       ],
       'Attack': [
-        { label: 'Kill (+1 Pt)', outcome: 'kill', pointFor: 'same', color: 'bg-emerald-600 text-white' },
-        { label: 'In Play', outcome: 'in_play', pointFor: null, color: 'bg-slate-800 text-slate-200' },
-        { label: 'Rebound', outcome: 'rebound', pointFor: null, color: 'bg-sky-700 text-white' },
-        { label: 'Blocked (+1 Opp)', outcome: 'blocked', pointFor: 'opposite', color: 'bg-amber-700 text-white' },
-        { label: 'Error (+1 Opp)', outcome: 'error', pointFor: 'opposite', color: 'bg-rose-700 text-white' }
+        { label: 'Kill (+1 Pt)', bg: 'bg-emerald-600', text: 'text-white' },
+        { label: 'In Play', bg: 'bg-cyan-600', text: 'text-white' },
+        { label: 'Rebound', bg: 'bg-slate-700', text: 'text-white' },
+        { label: 'Blocked (+1 Opp)', bg: 'bg-rose-600', text: 'text-white' },
+        { label: 'Error (+1 Opp)', bg: 'bg-rose-800', text: 'text-white' }
       ],
       'Block': [
-        { label: 'Score (+1 Pt)', outcome: 'block_score', pointFor: 'same', color: 'bg-emerald-600 text-white' },
-        { label: 'Rebound', outcome: 'rebound', pointFor: null, color: 'bg-sky-700 text-white' },
-        { label: 'Touch', outcome: 'touch', pointFor: null, color: 'bg-slate-800 text-slate-200' },
-        { label: 'Error (+1 Opp)', outcome: 'error', pointFor: 'opposite', color: 'bg-rose-600 text-white' }
+        { label: 'Score (+1 Pt)', bg: 'bg-emerald-600', text: 'text-white' },
+        { label: 'Rebound', bg: 'bg-slate-700', text: 'text-white' },
+        { label: 'Touch', bg: 'bg-cyan-600', text: 'text-white' },
+        { label: 'Error (+1 Opp)', bg: 'bg-rose-600', text: 'text-white' }
       ],
       'Opposite Error': [
-        { label: 'Opp Attack Out (+1 Pt)', outcome: 'opp_err_out', pointFor: 'same', color: 'bg-cyan-600 text-white' },
-        { label: 'Opp Net Fault (+1 Pt)', outcome: 'opp_err_net', pointFor: 'same', color: 'bg-cyan-600 text-white' },
-        { label: 'Opp Serve Error (+1 Pt)', outcome: 'opp_err_srv', pointFor: 'same', color: 'bg-cyan-600 text-white' },
-        { label: 'Opp Pos / Double (+1 Pt)', outcome: 'opp_err_pos', pointFor: 'same', color: 'bg-cyan-600 text-white' }
+        { label: 'Opposite Error (+1 Pt)', bg: 'bg-amber-500', text: 'text-slate-950' }
       ]
     };
 
-    function selectPlayer(team, jersey) {
-      state.activeTeam = team;
-      state.activePlayer = parseInt(jersey);
-      if (!state.lastActivePlayer) state.lastActivePlayer = { home: 21, away: 1 };
-      state.lastActivePlayer[team] = parseInt(jersey);
-      updateActiveSelectionUI();
+    const PLAYER_STATS_TEMPLATE = {
+      points: 0,
+      kills: 0, attackErr: 0, attackBlk: 0, attackAtt: 0,
+      aces: 0, serveErr: 0, serveAtt: 0,
+      blocks: 0, blockErr: 0, blockTouch: 0, blockReb: 0,
+      recA: 0, recB: 0, recC: 0, recD: 0, recE: 0,
+      oppErrorPoints: 0 // Team-level stat
+    };
+
+    let setStats = {
+      1: { home: {}, away: {}, homeOppErrors: 0, awayOppErrors: 0 },
+      2: { home: {}, away: {}, homeOppErrors: 0, awayOppErrors: 0 },
+      3: { home: {}, away: {}, homeOppErrors: 0, awayOppErrors: 0 },
+      4: { home: {}, away: {}, homeOppErrors: 0, awayOppErrors: 0 },
+      5: { home: {}, away: {}, homeOppErrors: 0, awayOppErrors: 0 }
+    };
+
+    function ensurePlayerStats(setNum, team, jersey) {
+      if (jersey == null) return;
+      if (!setStats[setNum][team][jersey]) {
+        setStats[setNum][team][jersey] = JSON.parse(JSON.stringify(PLAYER_STATS_TEMPLATE));
+      }
     }
 
-    function selectPlayerByCourtPosition(team, courtPos) {
-      const idx = POS_TO_INDEX[courtPos];
-      const jersey = state.rotations[team][idx];
-      selectPlayer(team, jersey);
-    }
+    /* ================= INITIALIZATION ================= */
+    window.onload = () => {
+      loadState();
+      updateAllUI();
+    };
 
-    function selectSkill(team, skill) {
-      state.activeTeam = team;
-      state.activeSkill = skill;
+    function updateAllUI() {
+      document.getElementById('headerHomeName').innerText = teamNames.home;
+      document.getElementById('headerAwayName').innerText = teamNames.away;
+      document.getElementById('homeSetsWon').innerText = setsWon.home;
+      document.getElementById('awaySetsWon').innerText = setsWon.away;
       
-      // Ensure activePlayer strictly belongs to the chosen team
-      const teamRot = state.rotations[team];
-      const teamLibs = state.liberos[team] || [];
-      const validPlayers = [...teamRot, ...teamLibs];
-      if (!validPlayers.includes(state.activePlayer)) {
-        state.activePlayer = (state.lastActivePlayer && validPlayers.includes(state.lastActivePlayer[team]))
-          ? state.lastActivePlayer[team]
-          : teamRot[0];
-      }
+      document.getElementById('scoreHome').innerText = scores[currentSet].home;
+      document.getElementById('scoreAway').innerText = scores[currentSet].away;
       
-      updateActiveSelectionUI();
-      renderOutcomes();
-    }
+      document.getElementById('homeSubIndicator').innerText = `Subs: ${subsUsed[currentSet].home}/6`;
+      document.getElementById('awaySubIndicator').innerText = `Subs: ${subsUsed[currentSet].away}/6`;
 
-    function updateActiveSelectionUI() {
-      const team = state.activeTeam;
-      const jersey = state.activePlayer;
-      const isLib = isLibero(team, jersey);
-      const teamName = state.teamNames[team];
-
-      const ind = document.getElementById('activeSelectionIndicator');
-      ind.className = team === 'home' ? "font-bold text-amber-400" : "font-bold text-rose-400";
-      
-      if (state.activeSkill === 'Opposite Error') {
-        ind.textContent = `${teamName} • Opponent Error (+1 Pt)`;
-      } else {
-        ind.textContent = `${teamName} • #${jersey}${isLib ? ' (L)' : ''} • ${state.activeSkill}`;
-      }
-
-      document.getElementById('activeSkillBadge').textContent = state.activeSkill.toUpperCase();
-
-      // Action button active glow highlights
-      ['home', 'away'].forEach(t => {
-        ['Serve', 'Receive', 'Attack', 'Block', 'Opposite Error'].forEach(s => {
-          const btnId = `btnAction_${t}_${s.replace(/\s+/g, '_')}`;
-          const btn = document.getElementById(btnId);
-          if (!btn) return;
-          const isCurrent = (t === state.activeTeam && s === state.activeSkill);
-          if (t === 'home') {
-            btn.className = isCurrent 
-              ? "touch-press w-full py-1.5 rounded-xl text-[11px] font-black bg-cyan-500 text-slate-950 border-2 border-white ring-2 ring-cyan-400 shadow-lg scale-102"
-              : "touch-press w-full py-1.5 rounded-xl text-[11px] font-black bg-cyan-700/80 text-white border border-cyan-500/70 shadow";
-          } else {
-            btn.className = isCurrent
-              ? "touch-press w-full py-1.5 rounded-xl text-[11px] font-black bg-rose-500 text-white border-2 border-white ring-2 ring-rose-400 shadow-lg scale-102"
-              : "touch-press w-full py-1.5 rounded-xl text-[11px] font-black bg-rose-700/80 text-white border border-rose-500/70 shadow";
-          }
-        });
-      });
-
-      updateCourtAndPadsVisuals();
-    }
-
-    function renderOutcomes() {
-      const container = document.getElementById('outcomesContainer');
-      container.innerHTML = '';
-      const list = OUTCOMES[state.activeSkill] || [];
-
-      if (state.activeSkill === 'Receive') {
-        container.className = "flex-1 grid grid-cols-2 gap-1 py-0.5";
-        list.forEach(item => {
-          const btn = document.createElement('button');
-          btn.className = `touch-press rounded-xl font-black text-[10px] flex items-center justify-center px-1 py-1 shadow ${item.color}`;
-          btn.textContent = item.label;
-          btn.onclick = () => recordAction(item);
-          container.appendChild(btn);
-        });
-      } else if (state.activeSkill === 'Attack') {
-        container.className = "flex-1 grid grid-cols-2 gap-1 py-0.5";
-        list.forEach((item, idx) => {
-          const btn = document.createElement('button');
-          const colSpan = (idx === 0) ? 'col-span-2' : '';
-          btn.className = `touch-press rounded-xl font-black text-[10px] flex items-center justify-center px-1.5 py-1 shadow ${item.color} ${colSpan}`;
-          btn.textContent = item.label;
-          btn.onclick = () => recordAction(item);
-          container.appendChild(btn);
-        });
-      } else if (state.activeSkill === 'Block' || state.activeSkill === 'Opposite Error') {
-        container.className = "flex-1 grid grid-cols-2 gap-1 py-0.5";
-        list.forEach(item => {
-          const btn = document.createElement('button');
-          btn.className = `touch-press rounded-xl font-black text-[10px] flex items-center justify-center px-1 py-1 shadow ${item.color}`;
-          btn.textContent = item.label;
-          btn.onclick = () => recordAction(item);
-          container.appendChild(btn);
-        });
-      } else {
-        // Serve: 3 stacked rows
-        container.className = "flex-1 flex flex-col justify-between py-0.5 gap-1";
-        list.forEach(item => {
-          const btn = document.createElement('button');
-          btn.className = `touch-press w-full py-1.5 rounded-xl font-black text-[11px] flex items-center justify-center shadow ${item.color}`;
-          btn.textContent = item.label;
-          btn.onclick = () => recordAction(item);
-          container.appendChild(btn);
-        });
-      }
-    }
-
-    function recordAction(outcomeItem) {
-      const curSet = state.sets[state.currentSet];
-      const prevScore = { home: curSet.home, away: curSet.away };
-      const team = state.activeTeam;
-      const oppTeam = team === 'home' ? 'away' : 'home';
-      const playerNum = state.activePlayer;
-
-      let pointAwarded = null;
-      let oppErrorAwardedTo = null;
-
-      // Handle direct "Opposite Error" skill (team point from opponent fault)
-      if (state.activeSkill === 'Opposite Error') {
-        curSet[team] += 1;
-        pointAwarded = team;
-        oppErrorAwardedTo = team;
-        addOpponentError(team, state.currentSet);
-
-        state.history.push({
-          type: 'action',
-          set: state.currentSet,
-          team: team,
-          player: null,
-          skill: 'Opposite Error',
-          outcome: outcomeItem.outcome,
-          grade: null,
-          pointAwarded: team,
-          oppErrorAwardedTo: team,
-          prevScore: prevScore
-        });
-
-        updateScoreDisplay();
-        showToast(`${state.teamNames[team]} Point: ${outcomeItem.label}`);
-        saveToLocalStorage();
-        return;
-      }
-
-      const targets = [
-        getOrCreatePlayerStats(team, playerNum),                   // Match Stats
-        getOrCreatePlayerStats(team, playerNum, state.currentSet)  // Current Set Stats
-      ];
-
-      targets.forEach(ps => {
-        if (outcomeItem.pointFor === 'same') {
-          ps.pts += 1;
-          if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'ace') ps.aces++;
-          if (state.activeSkill === 'Attack' && outcomeItem.outcome === 'kill') ps.kills++;
-          if (state.activeSkill === 'Block' && outcomeItem.outcome === 'block_score') ps.blocks++;
-        } else if (outcomeItem.pointFor === 'opposite') {
-          if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'error') ps.serveErrors++;
-          if (state.activeSkill === 'Attack') {
-            if (outcomeItem.outcome === 'blocked') ps.attackBlocked++;
-            else if (outcomeItem.outcome === 'error') ps.attackErrors++;
-          }
-          if (state.activeSkill === 'Block' && outcomeItem.outcome === 'error') ps.blockErrors++;
-        }
-
-        if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'in_play') {
-          ps.serveInPlay = (ps.serveInPlay || 0) + 1;
-        }
-        if (state.activeSkill === 'Attack') {
-          if (outcomeItem.outcome === 'in_play') ps.attackInPlay = (ps.attackInPlay || 0) + 1;
-          if (outcomeItem.outcome === 'rebound') ps.attackRebounds = (ps.attackRebounds || 0) + 1;
-        }
-        if (state.activeSkill === 'Block') {
-          if (outcomeItem.outcome === 'rebound') ps.blockRebounds = (ps.blockRebounds || 0) + 1;
-          if (outcomeItem.outcome === 'touch') ps.blockTouches = (ps.blockTouches || 0) + 1;
-        }
-
-        if (state.activeSkill === 'Receive' && outcomeItem.grade) {
-          ps.receives[outcomeItem.grade] = (ps.receives[outcomeItem.grade] || 0) + 1;
-        }
-      });
-
-      if (outcomeItem.pointFor === 'same') {
-        curSet[team] += 1;
-        pointAwarded = team;
-      } else if (outcomeItem.pointFor === 'opposite') {
-        curSet[oppTeam] += 1;
-        pointAwarded = oppTeam;
-        oppErrorAwardedTo = oppTeam;
-        addOpponentError(oppTeam, state.currentSet);
-      }
-
-      state.history.push({
-        type: 'action',
-        set: state.currentSet,
-        team: team,
-        player: playerNum,
-        skill: state.activeSkill,
-        outcome: outcomeItem.outcome,
-        grade: outcomeItem.grade || null,
-        pointAwarded: pointAwarded,
-        oppErrorAwardedTo: oppErrorAwardedTo,
-        prevScore: prevScore
-      });
-
-      updateScoreDisplay();
-      const isLib = isLibero(team, playerNum);
-      showToast(`${state.teamNames[team]} #${playerNum}${isLib ? ' (L)' : ''}: ${outcomeItem.label}`);
-      saveToLocalStorage();
-    }
-
-    function adjustScore(team, delta) {
-      const curSet = state.sets[state.currentSet];
-      const prevScore = { home: curSet.home, away: curSet.away };
-      curSet[team] = Math.max(0, curSet[team] + delta);
-
-      state.history.push({
-        type: 'scoreAdjust',
-        set: state.currentSet,
-        team: team,
-        delta: delta,
-        prevScore: prevScore
-      });
-
-      updateScoreDisplay();
-      saveToLocalStorage();
-    }
-
-    function rotateCourt(team) {
-      const rot = state.rotations[team];
-      const previousRotation = [...rot];
-
-      let autoLiberoReplaced = null;
-      const libState = state.liberoState[team];
-      const prevLibState = libState ? { ...libState } : null;
-
-      // Clockwise rotation
-      const last = rot.pop();
-      rot.unshift(last);
-
-      // FIVB Libero Front-Row Rule & Tracking
-      if (libState && libState.active) {
-        // Track the libero's shifted index after rotation
-        libState.posIndex = (libState.posIndex + 1) % 6;
-
-        // If Libero rotates into Position 4 (Index 3 = Front Row), auto-replace
-        if (libState.posIndex === POS_TO_INDEX[4]) {
-          rot[POS_TO_INDEX[4]] = libState.replacedJersey;
-          autoLiberoReplaced = {
-            libero: libState.liberoJersey,
-            restored: libState.replacedJersey
-          };
-          libState.active = false;
-          libState.liberoJersey = null;
-          libState.replacedJersey = null;
-          libState.posIndex = null;
-        }
-      }
-
-      const newServerJersey = rot[0];
-      state.activeTeam = team;
-      state.activePlayer = newServerJersey;
-
-      state.history.push({
-        type: 'rotation',
-        team: team,
-        previousRotation: previousRotation,
-        previousLibState: prevLibState,
-        autoLiberoReplaced: autoLiberoReplaced
-      });
-
-      updateCourtAndPadsVisuals();
-      updateActiveSelectionUI();
-      showToast(`${state.teamNames[team]} Rotated! Srv: #${newServerJersey}`);
-      saveToLocalStorage();
-    }
-
-    function triggerUndo() {
-      if (state.history.length === 0) {
-        showToast("Nothing to undo!");
-        return;
-      }
-      const last = state.history.pop();
-
-      if (last.type === 'action') {
-        state.sets[last.set].home = last.prevScore.home;
-        state.sets[last.set].away = last.prevScore.away;
-
-        if (last.oppErrorAwardedTo) {
-          state.oppErrors[last.oppErrorAwardedTo] = Math.max(0, (state.oppErrors[last.oppErrorAwardedTo] || 0) - 1);
-          if (state.setOppErrors?.[last.set]?.[last.oppErrorAwardedTo]) {
-            state.setOppErrors[last.set][last.oppErrorAwardedTo] = Math.max(0, state.setOppErrors[last.set][last.oppErrorAwardedTo] - 1);
-          }
-        }
-
-        if (last.player !== null) {
-          const targets = [
-            getOrCreatePlayerStats(last.team, last.player),
-            getOrCreatePlayerStats(last.team, last.player, last.set)
-          ];
-
-          targets.forEach(ps => {
-            if (last.pointAwarded === last.team) ps.pts = Math.max(0, ps.pts - 1);
-            if (last.outcome === 'ace') ps.aces = Math.max(0, ps.aces - 1);
-            if (last.outcome === 'kill') ps.kills = Math.max(0, ps.kills - 1);
-            if (last.outcome === 'block_score') ps.blocks = Math.max(0, ps.blocks - 1);
-            if (last.outcome === 'error' && last.skill === 'Serve') ps.serveErrors = Math.max(0, ps.serveErrors - 1);
-            if (last.skill === 'Attack') {
-              if (last.outcome === 'error') ps.attackErrors = Math.max(0, ps.attackErrors - 1);
-              if (last.outcome === 'blocked') ps.attackBlocked = Math.max(0, (ps.attackBlocked || 1) - 1);
-              if (last.outcome === 'in_play') ps.attackInPlay = Math.max(0, (ps.attackInPlay || 1) - 1);
-              if (last.outcome === 'rebound') ps.attackRebounds = Math.max(0, (ps.attackRebounds || 1) - 1);
-            }
-            if (last.skill === 'Serve' && last.outcome === 'in_play') {
-              ps.serveInPlay = Math.max(0, (ps.serveInPlay || 1) - 1);
-            }
-            if (last.skill === 'Block') {
-              if (last.outcome === 'rebound') ps.blockRebounds = Math.max(0, (ps.blockRebounds || 1) - 1);
-              if (last.outcome === 'touch') ps.blockTouches = Math.max(0, (ps.blockTouches || 1) - 1);
-              if (last.outcome === 'error') ps.blockErrors = Math.max(0, (ps.blockErrors || 1) - 1);
-            }
-            if (last.skill === 'Receive' && last.grade && ps.receives[last.grade] > 0) {
-              ps.receives[last.grade]--;
-            }
-          });
-        }
-      } else if (last.type === 'scoreAdjust') {
-        state.sets[last.set].home = last.prevScore.home;
-        state.sets[last.set].away = last.prevScore.away;
-      } else if (last.type === 'rotation') {
-        state.rotations[last.team] = [...last.previousRotation];
-        if (last.previousLibState) {
-          state.liberoState[last.team] = { ...last.previousLibState };
+      // Update Set Buttons
+      for(let i=1; i<=5; i++) {
+        const btn = document.getElementById(`btnSet${i}`);
+        if(i === currentSet) {
+          btn.className = "set-btn px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-500 text-slate-950 shadow";
         } else {
-          state.liberoState[last.team] = { active: false, liberoJersey: null, replacedJersey: null, posIndex: null };
+          btn.className = "set-btn px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition";
         }
-      } else if (last.type === 'substitution') {
-        state.rotations[last.team][last.posIndex] = last.offJersey;
-        state.substitutions[last.team][last.set] = Math.max(0, state.substitutions[last.team][last.set] - 1);
-      } else if (last.type === 'liberoSwap') {
-        state.rotations[last.team][last.posIndex] = last.previousJersey;
-        state.liberoState[last.team] = last.previousLibState;
       }
 
-      updateScoreDisplay();
-      updateCourtAndPadsVisuals();
-      updateActiveSelectionUI();
-      showToast("Undid last action!");
-      saveToLocalStorage();
+      updateCourt();
+      updateSelectionUI();
     }
 
     function switchSet(setNum) {
-      state.currentSet = setNum;
-      for (let i = 1; i <= 5; i++) {
-        const btn = document.getElementById(`btnSet${i}`);
-        if (i === setNum) {
-          btn.className = "set-btn px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-500 text-slate-950 shadow";
-        } else {
-          btn.className = "set-btn px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-400 hover:text-white";
-        }
+      currentSet = setNum;
+      updateAllUI();
+      saveState();
+    }
+
+    /* ================= SCORE & ROTATION ================= */
+    function adjustScore(team, amount) {
+      if (amount > 0) {
+        logHistory({ type: 'score', team: team, amount: amount, set: currentSet });
       }
-      updateScoreDisplay();
+      scores[currentSet][team] += amount;
+      if (scores[currentSet][team] < 0) scores[currentSet][team] = 0;
+      updateAllUI();
+      saveState();
     }
 
-    function updateScoreDisplay() {
-      const cur = state.sets[state.currentSet];
-      document.getElementById('scoreHome').textContent = cur.home;
-      document.getElementById('scoreAway').textContent = cur.away;
+    function rotateCourt(team) {
+      let current = { ...lineups[team] };
+      let newRot = {
+        1: current[2],
+        6: current[1],
+        5: current[6],
+        4: current[5],
+        3: current[4],
+        2: current[3]
+      };
 
-      document.getElementById('homeSetsWon').textContent = state.setsWon.home;
-      document.getElementById('awaySetsWon').textContent = state.setsWon.away;
+      // Handle Libero Rotation rules (Libero cannot move to Position 4)
+      let liberoAutoReturned = false;
+      if (activeLibero[team].onCourt && activeLibero[team].replacedPosition === 5) {
+        // Libero was in 5, is about to rotate to 4. Auto-return original player!
+        newRot[4] = activeLibero[team].replacedJersey;
+        activeLibero[team].onCourt = false;
+        activeLibero[team].jersey = null;
+        activeLibero[team].replacedPosition = null;
+        activeLibero[team].replacedJersey = null;
+        liberoAutoReturned = true;
+      } else if (activeLibero[team].onCourt) {
+        // Update Libero's tracked position securely
+        if (activeLibero[team].replacedPosition === 1) activeLibero[team].replacedPosition = 6;
+        else if (activeLibero[team].replacedPosition === 6) activeLibero[team].replacedPosition = 5;
+      }
 
-      document.getElementById('homeSubIndicator').textContent = `Subs: ${state.substitutions.home[state.currentSet] || 0}/6`;
-      document.getElementById('awaySubIndicator').textContent = `Subs: ${state.substitutions.away[state.currentSet] || 0}/6`;
+      logHistory({
+        type: 'rotation',
+        team: team,
+        oldLineup: current,
+        newLineup: newRot,
+        oldLiberoState: JSON.parse(JSON.stringify(activeLibero[team])) // simplified snapshot
+      });
+
+      lineups[team] = newRot;
+      
+      // Keep selection valid
+      if (activeSelection.team === team) {
+        let newPos = 1; // Default
+        for(let p=1; p<=6; p++){ if(newRot[p] === current[activeSelection.position]) newPos = p; }
+        activeSelection.position = newPos;
+      }
+      
+      updateAllUI();
+      saveState();
+
+      if(liberoAutoReturned) {
+        alert("Libero reached front row (Position 4) and was automatically benched. Original player returned.");
+      }
     }
 
-    function updateCourtAndPadsVisuals() {
-      // 1. Update Court Circles with Halo Ring on Selected Player
-      ['home', 'away'].forEach(team => {
-        const rot = state.rotations[team];
-        INDEX_TO_POS.forEach((courtPos, idx) => {
-          const jersey = rot[idx];
-          const el = document.getElementById(`courtCircle_${team}_${courtPos}`);
-          if (!el) return;
+    /* ================= SELECTION & OUTCOMES ================= */
+    function selectPlayerByCourtPosition(team, position) {
+      activeSelection.team = team;
+      activeSelection.position = position;
+      updateSelectionUI();
+    }
 
-          el.textContent = jersey;
-          const isSelected = (state.activeTeam === team && state.activePlayer === jersey);
-          const isLib = isLibero(team, jersey);
+    function selectSkill(team, skill) {
+      activeSelection.team = team;
+      activeSelection.skill = skill;
+      updateSelectionUI();
+    }
 
-          if (isLib) {
-            el.className = `court-circle bg-emerald-500 text-white font-black shadow ${isSelected ? 'selected-halo' : ''}`;
-          } else if (team === 'home') {
-            el.className = `court-circle bg-[#facc15] text-slate-950 font-black shadow ${isSelected ? 'selected-halo' : ''}`;
+    function updateSelectionUI() {
+      // Court Highlights
+      ['home','away'].forEach(t => {
+        for(let i=1; i<=6; i++) {
+          let circle = document.getElementById(`courtCircle_${t}_${i}`);
+          circle.classList.remove('selected-halo');
+          if (t === activeSelection.team && i === activeSelection.position) {
+            circle.classList.add('selected-halo');
+          }
+        }
+      });
+
+      // Action Buttons Highlights
+      ['home','away'].forEach(t => {
+        ['Serve','Receive','Attack','Block','Opposite_Error'].forEach(s => {
+          let btn = document.getElementById(`btnAction_${t}_${s}`);
+          if(!btn) return;
+          if (t === activeSelection.team && s.replace('_', ' ') === activeSelection.skill) {
+            btn.classList.add('ring-2', 'ring-white', 'scale-105', 'z-10');
+            btn.classList.remove('opacity-70');
           } else {
-            el.className = `court-circle bg-[#d8b4fe] text-[#581c87] font-black shadow ${isSelected ? 'selected-halo' : ''}`;
+            btn.classList.remove('ring-2', 'ring-white', 'scale-105', 'z-10');
+            btn.classList.add('opacity-70');
           }
         });
       });
+
+      // Update Banner
+      let tName = activeSelection.team === 'home' ? teamNames.home : teamNames.away;
+      let jNum = lineups[activeSelection.team][activeSelection.position];
+      
+      // Libero check
+      let isLiberoHere = (activeLibero[activeSelection.team].onCourt && activeLibero[activeSelection.team].replacedPosition === activeSelection.position);
+      if (isLiberoHere) jNum = activeLibero[activeSelection.team].jersey;
+
+      document.getElementById('activeSelectionIndicator').innerHTML = 
+        `<span class="${activeSelection.team === 'home' ? 'text-cyan-400' : 'text-rose-400'}">${tName}</span> • 
+         <span class="text-white">#${jNum} ${isLiberoHere ? '(L)' : ''}</span> • 
+         <span class="text-amber-400">${activeSelection.skill}</span>`;
+         
+      document.getElementById('activeSkillBadge').innerText = activeSelection.skill.toUpperCase();
+      renderOutcomes(activeSelection.skill);
     }
 
-    // ================= SUBSTITUTION LOGIC =================
-    let pendingSubTeam = 'home';
-    let selectedSubOffPos = null;
+    function updateCourt() {
+      ['home','away'].forEach(t => {
+        for(let i=1; i<=6; i++) {
+          let jNum = lineups[t][i];
+          let circle = document.getElementById(`courtCircle_${t}_${i}`);
+          
+          let isLibero = (activeLibero[t].onCourt && activeLibero[t].replacedPosition === i);
+          if (isLibero) jNum = activeLibero[t].jersey;
+
+          circle.innerHTML = jNum;
+          if(isLibero) {
+            circle.innerHTML += `<div class="libero-badge">L</div>`;
+            circle.classList.remove('bg-[#facc15]', 'bg-[#d8b4fe]');
+            circle.classList.add('bg-emerald-500', 'text-white', 'border-2', 'border-white');
+          } else {
+            circle.classList.remove('bg-emerald-500', 'text-white', 'border-2', 'border-white');
+            if(t==='home') circle.classList.add('bg-[#facc15]', 'text-slate-950');
+            if(t==='away') circle.classList.add('bg-[#d8b4fe]', 'text-[#581c87]');
+          }
+        }
+      });
+    }
+
+    function renderOutcomes(skill) {
+      const container = document.getElementById('outcomesContainer');
+      container.innerHTML = '';
+      
+      const outcomesList = OUTCOMES_CONFIG[skill];
+      if(!outcomesList) return;
+
+      // Custom 5-button layout for Receive (A-E)
+      if(outcomesList.length === 5 && skill === 'Receive') {
+         let html = '<div class="grid grid-cols-2 gap-1.5 flex-1">';
+         outcomesList.forEach((outcome) => {
+            let colSpan = outcome.colSpan ? 'col-span-2' : 'col-span-1'; 
+            html += `<button onclick="recordAction('${skill}', '${outcome.label}')" class="touch-press ${colSpan} rounded-lg text-xs font-bold ${outcome.bg} ${outcome.text} border border-white/20 shadow flex items-center justify-center min-h-[36px] px-1 text-center leading-tight">
+              ${outcome.label}
+            </button>`;
+         });
+         html += '</div>';
+         container.innerHTML = html;
+      } 
+      else {
+        let cols = outcomesList.length % 2 === 0 ? 'grid-cols-2' : 'grid-cols-1';
+        if(outcomesList.length === 3) cols = 'grid-cols-1';
+
+        let html = `<div class="grid ${cols} gap-1.5 flex-1">`;
+        outcomesList.forEach(outcome => {
+          html += `<button onclick="recordAction('${skill}', '${outcome.label}')" class="touch-press rounded-lg text-xs font-bold ${outcome.bg} ${outcome.text} border border-white/20 shadow flex items-center justify-center min-h-[36px] px-1 text-center leading-tight">
+            ${outcome.label}
+          </button>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      }
+    }
+
+    function recordAction(skill, outcome) {
+      const team = activeSelection.team;
+      const pos = activeSelection.position;
+      const opponent = team === 'home' ? 'away' : 'home';
+      
+      let jersey = lineups[team][pos];
+      if (activeLibero[team].onCourt && activeLibero[team].replacedPosition === pos) {
+        jersey = activeLibero[team].jersey;
+      }
+      
+      ensurePlayerStats(currentSet, team, jersey);
+      let stats = setStats[currentSet][team][jersey];
+
+      let pointToTeam = false;
+      let pointToOpponent = false;
+
+      // Point logic parsing
+      if (skill === 'Opposite Error') {
+         pointToTeam = true;
+      } else {
+         if (outcome.includes('(+1 Pt)')) pointToTeam = true;
+         // Note: Receive Error (E) DOES NOT award opponent points anymore.
+         if (outcome.includes('(+1 Opp)') && skill !== 'Receive') pointToOpponent = true;
+      }
+
+      // Snapshot for Undo
+      let historyItem = {
+        type: 'action',
+        set: currentSet,
+        team: team,
+        jersey: jersey,
+        skill: skill,
+        outcome: outcome,
+        scoreAddedTeam: pointToTeam,
+        scoreAddedOpp: pointToOpponent,
+        oppErrorLog: (skill === 'Opposite Error') 
+      };
+      logHistory(historyItem);
+
+      // Stat Updates
+      if (skill === 'Serve') {
+        stats.serveAtt++;
+        if (outcome.includes('Score')) { stats.aces++; stats.points++; }
+        if (outcome.includes('Error')) stats.serveErr++;
+      }
+      else if (skill === 'Receive') {
+        if (outcome.startsWith('A')) stats.recA++;
+        if (outcome.startsWith('B')) stats.recB++;
+        if (outcome.startsWith('C')) stats.recC++;
+        if (outcome.startsWith('D')) stats.recD++;
+        if (outcome.startsWith('E')) stats.recE++; // Error logged, but no points assigned.
+      }
+      else if (skill === 'Attack') {
+        stats.attackAtt++;
+        if (outcome.includes('Kill')) { stats.kills++; stats.points++; }
+        if (outcome.includes('Error')) stats.attackErr++;
+        if (outcome.includes('Blocked')) stats.attackBlk++;
+      }
+      else if (skill === 'Block') {
+        if (outcome.includes('Score')) { stats.blocks++; stats.points++; }
+        if (outcome.includes('Error')) stats.blockErr++;
+        if (outcome.includes('Rebound')) stats.blockReb++;
+        if (outcome.includes('Touch')) stats.blockTouch++;
+      }
+
+      // Track Opponent Errors explicitly
+      if (skill === 'Opposite Error') {
+        if (team === 'home') setStats[currentSet].homeOppErrors++;
+        if (team === 'away') setStats[currentSet].awayOppErrors++;
+      }
+
+      // Update Scores & increment opp errors if opponent earned a point via your error
+      if (pointToTeam) {
+        scores[currentSet][team]++;
+      }
+      if (pointToOpponent) {
+        scores[currentSet][opponent]++;
+        if (opponent === 'home') setStats[currentSet].homeOppErrors++;
+        if (opponent === 'away') setStats[currentSet].awayOppErrors++;
+      }
+
+      updateAllUI();
+      saveState();
+
+      // Show tiny visual feedback
+      const badge = document.getElementById('activeSkillBadge');
+      badge.innerText = "RECORDED!";
+      badge.classList.remove('bg-amber-400');
+      badge.classList.add('bg-emerald-400');
+      setTimeout(() => {
+        badge.innerText = activeSelection.skill.toUpperCase();
+        badge.classList.remove('bg-emerald-400');
+        badge.classList.add('bg-amber-400');
+      }, 500);
+    }
+
+    /* ================= UNDO SYSTEM ================= */
+    function logHistory(data) {
+      historyStack.push(data);
+      if(historyStack.length > 50) historyStack.shift();
+    }
+
+    function triggerUndo() {
+      if (historyStack.length === 0) return;
+      const last = historyStack.pop();
+
+      if (last.type === 'score') {
+        scores[last.set][last.team] -= last.amount;
+      } 
+      else if (last.type === 'rotation') {
+        lineups[last.team] = last.oldLineup;
+        if (last.oldLiberoState) {
+          activeLibero[last.team] = last.oldLiberoState;
+        }
+      }
+      else if (last.type === 'sub') {
+        lineups[last.team][last.position] = last.oldJersey;
+        subsUsed[last.set][last.team]--;
+      }
+      else if (last.type === 'libero') {
+        activeLibero[last.team] = last.oldState;
+      }
+      else if (last.type === 'action') {
+        let stats = setStats[last.set][last.team][last.jersey];
+        if (stats) {
+          if (last.skill === 'Serve') {
+            stats.serveAtt--;
+            if (last.outcome.includes('Score')) { stats.aces--; stats.points--; }
+            if (last.outcome.includes('Error')) stats.serveErr--;
+          }
+          else if (last.skill === 'Receive') {
+            if (last.outcome.startsWith('A')) stats.recA--;
+            if (last.outcome.startsWith('B')) stats.recB--;
+            if (last.outcome.startsWith('C')) stats.recC--;
+            if (last.outcome.startsWith('D')) stats.recD--;
+            if (last.outcome.startsWith('E')) stats.recE--;
+          }
+          else if (last.skill === 'Attack') {
+            stats.attackAtt--;
+            if (last.outcome.includes('Kill')) { stats.kills--; stats.points--; }
+            if (last.outcome.includes('Error')) stats.attackErr--;
+            if (last.outcome.includes('Blocked')) stats.attackBlk--;
+          }
+          else if (last.skill === 'Block') {
+            if (last.outcome.includes('Score')) { stats.blocks--; stats.points--; }
+            if (last.outcome.includes('Error')) stats.blockErr--;
+            if (last.outcome.includes('Rebound')) stats.blockReb--;
+            if (last.outcome.includes('Touch')) stats.blockTouch--;
+          }
+        }
+
+        if (last.scoreAddedTeam) {
+          scores[last.set][last.team]--;
+        }
+        if (last.scoreAddedOpp) {
+          const opp = last.team === 'home' ? 'away' : 'home';
+          scores[last.set][opp]--;
+          if (opp === 'home') setStats[last.set].homeOppErrors--;
+          if (opp === 'away') setStats[last.set].awayOppErrors--;
+        }
+        if (last.oppErrorLog) {
+          if (last.team === 'home') setStats[last.set].homeOppErrors--;
+          if (last.team === 'away') setStats[last.set].awayOppErrors--;
+        }
+      }
+
+      updateAllUI();
+      saveState();
+    }
+
+    /* ================= SUBSTITUTION ================= */
+    let currentSubTeam = 'home';
+    let subOffPosition = null;
 
     function openSubModal(team) {
-      pendingSubTeam = team;
-      selectedSubOffPos = null;
-      document.getElementById('subModalTitle').innerHTML = `
-        <i data-lucide="arrow-left-right" class="w-4 h-4 text-cyan-400"></i> Substitution (${state.teamNames[team]})
-      `;
+      currentSubTeam = team;
+      subOffPosition = null;
+      document.getElementById('subModal').classList.remove('hidden');
       document.getElementById('subOnJerseyInput').value = '';
-
+      
       const grid = document.getElementById('subOffPlayersGrid');
       grid.innerHTML = '';
-      const rot = state.rotations[team];
+      
+      for(let i=1; i<=6; i++) {
+        let jNum = lineups[team][i];
+        // Cannot sub a libero using regular sub menu
+        if (activeLibero[team].onCourt && activeLibero[team].replacedPosition === i) continue;
 
-      INDEX_TO_POS.forEach((courtPos, idx) => {
-        const jersey = rot[idx];
-        const btn = document.createElement('button');
-        btn.id = `subBtn_pos_${courtPos}`;
-        btn.className = "touch-press p-2 rounded-xl bg-slate-950 border border-slate-700 text-center";
-        btn.innerHTML = `
-          <div class="text-[9px] text-slate-400 font-semibold">Pos ${courtPos}</div>
-          <div class="text-sm font-extrabold text-white">#${jersey}</div>
-        `;
-        btn.onclick = () => {
-          selectedSubOffPos = courtPos;
-          INDEX_TO_POS.forEach(p => {
-            const b = document.getElementById(`subBtn_pos_${p}`);
-            if (b) b.className = (p === courtPos) 
-              ? "touch-press p-2 rounded-xl bg-cyan-600 border border-cyan-400 text-white font-bold shadow"
-              : "touch-press p-2 rounded-xl bg-slate-950 border border-slate-700 text-center";
+        let btn = document.createElement('button');
+        btn.innerText = `P${i}: #${jNum}`;
+        btn.className = "px-2 py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 text-[11px] font-bold";
+        btn.onclick = (e) => {
+          Array.from(grid.children).forEach(c => {
+            c.classList.remove('bg-cyan-600', 'text-white', 'border-cyan-400');
+            c.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700');
           });
+          e.target.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700');
+          e.target.classList.add('bg-cyan-600', 'text-white', 'border-cyan-400');
+          subOffPosition = i;
         };
         grid.appendChild(btn);
-      });
-
-      document.getElementById('subModal').classList.remove('hidden');
-      lucide.createIcons();
+      }
     }
 
-    function closeSubModal() {
-      document.getElementById('subModal').classList.add('hidden');
-    }
+    function closeSubModal() { document.getElementById('subModal').classList.add('hidden'); }
 
     function executeSubstitution() {
-      if (!selectedSubOffPos) {
-        showToast("Please choose player coming OFF!");
+      const onJersey = parseInt(document.getElementById('subOnJerseyInput').value);
+      if (!subOffPosition || isNaN(onJersey)) {
+        alert("Select a player to come off and enter a valid jersey number.");
         return;
       }
-      const onVal = parseInt(document.getElementById('subOnJerseyInput').value);
-      if (isNaN(onVal) || onVal < 1 || onVal > 99) {
-        showToast("Please enter a valid Jersey # (1-99)");
+      if (subsUsed[currentSet][currentSubTeam] >= 6) {
+        alert("Maximum 6 substitutions used for this set.");
         return;
       }
 
-      const team = pendingSubTeam;
-      const idx = POS_TO_INDEX[selectedSubOffPos];
-      const offJersey = state.rotations[team][idx];
-
-      state.substitutions[team][state.currentSet] = (state.substitutions[team][state.currentSet] || 0) + 1;
-      state.rotations[team][idx] = onVal;
-      getOrCreatePlayerStats(team, onVal);
-
-      state.history.push({
-        type: 'substitution',
-        team: team,
-        set: state.currentSet,
-        posIndex: idx,
-        courtPos: selectedSubOffPos,
-        offJersey: offJersey,
-        onJersey: onVal
+      logHistory({
+        type: 'sub',
+        set: currentSet,
+        team: currentSubTeam,
+        position: subOffPosition,
+        oldJersey: lineups[currentSubTeam][subOffPosition],
+        newJersey: onJersey
       });
 
+      lineups[currentSubTeam][subOffPosition] = onJersey;
+      playerJerseys[currentSubTeam].add(onJersey);
+      subsUsed[currentSet][currentSubTeam]++;
+      
       closeSubModal();
-      updateCourtAndPadsVisuals();
-      updateScoreDisplay();
-      showToast(`${state.teamNames[team]} Sub: #${offJersey} OFF, #${onVal} ON`);
-      saveToLocalStorage();
+      updateAllUI();
+      saveState();
     }
 
-    // ================= LIBERO LOGIC =================
-    let pendingLiberoTeam = 'home';
-    let selectedLiberoTargetPos = null;
+    /* ================= LIBERO SYSTEM (Rebuilt to match UI Mockups) ================= */
+    let currentLiberoTeam = 'home';
+    let selectedLiberoPos = null;
 
     function openLiberoModal(team) {
-      pendingLiberoTeam = team;
-      selectedLiberoTargetPos = null;
-      const libList = state.liberos[team] || [];
-      const libState = state.liberoState[team];
+      currentLiberoTeam = team;
+      selectedLiberoPos = null;
+      document.getElementById('liberoModal').classList.remove('hidden');
+      
+      const tName = team === 'home' ? teamNames.home : teamNames.away;
+      document.getElementById('liberoModalTitle').innerText = `Libero (${tName})`;
+      document.getElementById('liberoModalTitle').className = team === 'home' 
+        ? "font-black text-emerald-400 text-sm tracking-wide" 
+        : "font-black text-rose-400 text-sm tracking-wide";
 
-      if (libList.length === 0) {
-        showToast(`Set up ${state.teamNames[team]} Libero in "Teams" first!`);
-        openLineupModal();
+      const l1 = liberos[team].L1;
+      const l2 = liberos[team].L2;
+      const activeL = activeLibero[team];
+      const body = document.getElementById('liberoModalBody');
+      body.innerHTML = '';
+
+      if (!l1 && !l2) {
+        body.innerHTML = `<div class="p-3 bg-[#424653] border border-slate-600 rounded-lg text-xs text-slate-300 text-center font-medium">No Liberos configured. Setup in Teams menu.</div>
+                          <div class="flex justify-end pt-2">
+                             <button onclick="closeLiberoModal()" class="px-4 py-1.5 bg-[#424653] hover:bg-slate-500 text-slate-200 text-xs font-bold rounded shadow border border-slate-600">Close</button>
+                          </div>`;
         return;
       }
 
-      document.getElementById('liberoModalTitle').textContent = `Libero (${state.teamNames[team]})`;
-      const banner = document.getElementById('activeLiberoBanner');
-      const swapContainer = document.getElementById('liberoSwapContainer');
-      const targetContainer = document.getElementById('liberoTargetGridContainer');
+      // Generate Registered Liberos string
+      let regStr = `Registered Liberos: `;
+      let regs = [];
+      if(l1) regs.push(`#${l1}`);
+      if(l2) regs.push(`#${l2}`);
+      regStr += regs.join(", ");
 
-      if (libState && libState.active) {
-        banner.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span>Active on court: <strong class="text-emerald-400">#${libState.liberoJersey}</strong></span>
-            <button onclick="returnLiberoToBench('${team}')" class="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-lg text-[10px]">
-              Return #${libState.replacedJersey}
+      if (activeL.onCourt) {
+        // SCENARIO B: Libero is Active on Court
+        let otherLib = (activeL.jersey == l1) ? l2 : l1;
+
+        let html = `
+          <!-- Active Row -->
+          <div class="flex items-center justify-between p-3 bg-[#424653] border border-slate-600 rounded-lg">
+            <span class="text-[11px] font-bold text-white">Active on court: <span class="text-emerald-400">#${activeL.jersey}</span></span>
+            <button onclick="executeLiberoReturn()" class="touch-press px-3 py-1.5 bg-[#eab308] hover:bg-yellow-400 text-slate-950 text-[11px] font-black rounded shadow">
+              Return #${activeL.replacedJersey}
             </button>
           </div>
         `;
-        
-        targetContainer.classList.add('hidden');
-        
-        const actionRow = document.getElementById('liberoActionRow');
-        if (actionRow) {
-          actionRow.innerHTML = `<button onclick="closeLiberoModal()" class="touch-press px-3 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-xs font-semibold">Close</button>`;
+
+        if (otherLib) {
+          html += `
+          <!-- Swap Row -->
+          <div class="flex items-center justify-between p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-lg mt-1">
+            <span class="text-[11px] font-bold text-emerald-300/80">Swap with other Libero:</span>
+            <button onclick="executeLiberoToLiberoSwap(${otherLib})" class="touch-press px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-black rounded shadow">
+              Swap to #${otherLib}
+            </button>
+          </div>
+          `;
         }
 
-        // Check if there is a second libero available to swap with
-        const otherLibero = libList.find(l => l !== libState.liberoJersey);
-        if (otherLibero) {
-          swapContainer.classList.remove('hidden');
-          swapContainer.classList.add('flex');
-          const swapBtn = document.getElementById('btnLiberoSwap');
-          swapBtn.textContent = `Swap to #${otherLibero}`;
-          swapBtn.onclick = () => executeLiberoToLiberoSwap(otherLibero);
-        } else {
-          swapContainer.classList.add('hidden');
-          swapContainer.classList.remove('flex');
-        }
+        html += `
+          <div class="flex justify-end pt-2">
+             <button onclick="closeLiberoModal()" class="px-4 py-1.5 bg-[#424653] hover:bg-slate-500 text-slate-200 text-xs font-bold rounded shadow border border-slate-600">Close</button>
+          </div>
+        `;
+        body.innerHTML = html;
 
       } else {
-        banner.innerHTML = `Registered Liberos: <strong class="text-emerald-400">${libList.map(j => '#' + j).join(', ')}</strong>`;
-        targetContainer.classList.remove('hidden');
-        
-        const actionRow = document.getElementById('liberoActionRow');
-        if (actionRow) {
-          actionRow.innerHTML = `<button onclick="closeLiberoModal()" class="touch-press px-3 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-xs font-semibold">Cancel</button>`;
-          libList.forEach(libJersey => {
-            const btn = document.createElement('button');
-            btn.className = "touch-press px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow ml-1.5";
-            btn.textContent = `In: #${libJersey}`;
-            btn.onclick = () => executeLiberoSwap(libJersey);
-            actionRow.appendChild(btn);
-          });
-        }
-        
-        swapContainer.classList.add('hidden');
-        swapContainer.classList.remove('flex');
-      }
-
-      const grid = document.getElementById('liberoTargetGrid');
-      grid.innerHTML = '';
-      const rot = state.rotations[team];
-
-      BACK_ROW_POSITIONS.forEach(pos => {
-        const idx = POS_TO_INDEX[pos];
-        const jersey = rot[idx];
-        const btn = document.createElement('button');
-        btn.id = `libTarget_pos_${pos}`;
-        btn.className = "touch-press p-2 rounded-xl bg-slate-950 border border-slate-700 text-center";
-        btn.innerHTML = `
-          <div class="text-[9px] text-slate-400 font-semibold">Pos ${pos} (Back)</div>
-          <div class="text-sm font-extrabold text-white">#${jersey}</div>
+        // SCENARIO A: No Libero on Court (Replace Back-Row)
+        let html = `
+          <!-- Registered Banner -->
+          <div class="p-2.5 bg-[#424653] border border-slate-600 rounded-lg text-[11px] font-bold text-white">
+            ${regStr.replace(/#\d+/g, match => `<span class="text-emerald-400">${match}</span>`)}
+          </div>
+          
+          <div>
+            <label class="block text-[10px] text-slate-400 mb-2 font-semibold">Replace Back-Row Player (P1, P6, P5):</label>
+            <div class="grid grid-cols-3 gap-2" id="liberoTargetGrid">
         `;
-        btn.onclick = () => {
-          selectedLiberoTargetPos = pos;
-          BACK_ROW_POSITIONS.forEach(p => {
-            const b = document.getElementById(`libTarget_pos_${p}`);
-            if (b) b.className = (p === pos)
-              ? "touch-press p-2 rounded-xl bg-emerald-600 border border-emerald-400 text-white font-bold shadow"
-              : "touch-press p-2 rounded-xl bg-slate-950 border border-slate-700 text-center";
-          });
-        };
-        grid.appendChild(btn);
+
+        // Render the 3 back-row blocks
+        [1, 6, 5].forEach(pos => {
+          let jNum = lineups[team][pos];
+          html += `
+            <button onclick="selectLiberoTarget(this, ${pos})" class="touch-press flex flex-col items-center justify-center p-2 rounded-lg border border-slate-600 bg-[#424653] text-slate-300 transition-colors">
+              <span class="text-[9px] font-medium opacity-70 mb-0.5">Pos ${pos} (Back)</span>
+              <span class="text-[13px] font-black">#${jNum}</span>
+            </button>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-end space-x-2 pt-4 border-t border-slate-600/50 mt-1">
+            <button onclick="closeLiberoModal()" class="touch-press px-3 py-1.5 bg-[#424653] hover:bg-slate-500 text-slate-200 text-[11px] font-bold rounded shadow border border-slate-600">Cancel</button>
+        `;
+
+        if (l1) html += `<button onclick="executeLiberoEntry(${l1})" id="btnLibEntry1" class="hidden touch-press px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-black rounded shadow">In: #${l1}</button>`;
+        if (l2) html += `<button onclick="executeLiberoEntry(${l2})" id="btnLibEntry2" class="hidden touch-press px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-black rounded shadow">In: #${l2}</button>`;
+
+        html += `</div>`;
+        body.innerHTML = html;
+      }
+    }
+
+    // Helper to highlight selected back-row block and reveal 'In' buttons
+    function selectLiberoTarget(btnElement, position) {
+      selectedLiberoPos = position;
+      
+      // Reset all blocks
+      const grid = document.getElementById('liberoTargetGrid');
+      Array.from(grid.children).forEach(c => {
+        c.className = "touch-press flex flex-col items-center justify-center p-2 rounded-lg border border-slate-600 bg-[#424653] text-slate-300 transition-colors";
       });
 
-      document.getElementById('liberoModal').classList.remove('hidden');
-      lucide.createIcons();
+      // Highlight selected block (Green)
+      btnElement.className = "touch-press flex flex-col items-center justify-center p-2 rounded-lg border border-emerald-500 bg-emerald-500 text-slate-950 transition-colors";
+
+      // Reveal buttons
+      if(document.getElementById('btnLibEntry1')) document.getElementById('btnLibEntry1').classList.remove('hidden');
+      if(document.getElementById('btnLibEntry2')) document.getElementById('btnLibEntry2').classList.remove('hidden');
     }
 
-    function closeLiberoModal() {
-      document.getElementById('liberoModal').classList.add('hidden');
-    }
+    function closeLiberoModal() { document.getElementById('liberoModal').classList.add('hidden'); }
 
-    function executeLiberoSwap(chosenLibero) {
-      if (!selectedLiberoTargetPos) {
-        showToast("Please select a back-row position (1, 6, 5)!");
-        return;
-      }
-      const team = pendingLiberoTeam;
-      const idx = POS_TO_INDEX[selectedLiberoTargetPos];
-      const currentJersey = state.rotations[team][idx];
-      
-      // Fallback if no specific libero is passed
-      if (!chosenLibero || typeof chosenLibero !== 'number') {
-        const libList = state.liberos[team];
-        chosenLibero = libList[0];
-      }
+    function executeLiberoEntry(liberoJersey) {
+      if (!selectedLiberoPos) return;
+      const team = currentLiberoTeam;
+      const replacedJ = lineups[team][selectedLiberoPos];
 
-      const prevLibState = { ...state.liberoState[team] };
+      logHistory({ type: 'libero', team: team, oldState: JSON.parse(JSON.stringify(activeLibero[team])) });
 
-      state.rotations[team][idx] = chosenLibero;
-      state.liberoState[team] = {
-        active: true,
-        liberoJersey: chosenLibero,
-        replacedJersey: currentJersey,
-        posIndex: idx
+      activeLibero[team] = {
+        onCourt: true,
+        jersey: liberoJersey,
+        replacedPosition: selectedLiberoPos,
+        replacedJersey: replacedJ
       };
 
-      state.history.push({
-        type: 'liberoSwap',
-        team: team,
-        posIndex: idx,
-        previousJersey: currentJersey,
-        previousLibState: prevLibState
-      });
-
       closeLiberoModal();
-      updateCourtAndPadsVisuals();
-      showToast(`Libero #${chosenLibero} in at Pos ${selectedLiberoTargetPos}`);
-      saveToLocalStorage();
+      updateAllUI();
+      saveState();
+    }
+
+    function executeLiberoReturn() {
+      const team = currentLiberoTeam;
+      logHistory({ type: 'libero', team: team, oldState: JSON.parse(JSON.stringify(activeLibero[team])) });
+      
+      activeLibero[team] = { onCourt: false, jersey: null, replacedPosition: null, replacedJersey: null };
+      
+      closeLiberoModal();
+      updateAllUI();
+      saveState();
     }
 
     function executeLiberoToLiberoSwap(newLiberoJersey) {
-      const team = pendingLiberoTeam;
-      const libState = state.liberoState[team];
+      const team = currentLiberoTeam;
+      logHistory({ type: 'libero', team: team, oldState: JSON.parse(JSON.stringify(activeLibero[team])) });
       
-      if (!libState || !libState.active) return;
-
-      const idx = libState.posIndex;
-      const oldLiberoJersey = libState.liberoJersey;
-      const prevLibState = { ...libState };
-
-      // Swap the active libero on the court
-      state.rotations[team][idx] = newLiberoJersey;
+      // Swap the active jersey leaving them in the exact same back-row position
+      activeLibero[team].jersey = newLiberoJersey;
       
-      // Update the libero tracking state
-      state.liberoState[team].liberoJersey = newLiberoJersey;
-
-      state.history.push({
-        type: 'liberoSwap',
-        team: team,
-        posIndex: idx,
-        previousJersey: oldLiberoJersey,
-        previousLibState: prevLibState
-      });
-
       closeLiberoModal();
-      updateCourtAndPadsVisuals();
-      showToast(`Libero Swap: #${oldLiberoJersey} out, #${newLiberoJersey} in`);
-      saveToLocalStorage();
+      updateAllUI();
+      saveState();
     }
 
-    function returnLiberoToBench(team) {
-      const libState = state.liberoState[team];
-      if (!libState || !libState.active) return;
-
-      const idx = libState.posIndex;
-      const prevJersey = state.rotations[team][idx];
-      const prevLibState = { ...libState };
-
-      state.rotations[team][idx] = libState.replacedJersey;
-      state.liberoState[team] = {
-        active: false,
-        liberoJersey: null,
-        replacedJersey: null,
-        posIndex: null
-      };
-
-      state.history.push({
-        type: 'liberoSwap',
-        team: team,
-        posIndex: idx,
-        previousJersey: prevJersey,
-        previousLibState: prevLibState
-      });
-
-      closeLiberoModal();
-      updateCourtAndPadsVisuals();
-      showToast(`Returned #${libState.replacedJersey} to court.`);
-      saveToLocalStorage();
-    }
-
-    // ================= LINEUP & TEAM SETUP =================
+    /* ================= TEAMS / LINEUP MODAL ================= */
     function openLineupModal() {
-      document.getElementById('inputLineupHomeName').value = state.teamNames.home;
-      document.getElementById('inputLineupAwayName').value = state.teamNames.away;
-
-      ['home', 'away'].forEach(team => {
-        const rot = state.rotations[team];
-        INDEX_TO_POS.forEach((p, idx) => {
-          document.getElementById(`setup_${team}_${p}`).value = rot[idx];
-        });
-        document.getElementById(`setup_${team}_lib1`).value = state.liberos[team][0] || '';
-        document.getElementById(`setup_${team}_lib2`).value = state.liberos[team][1] || '';
-      });
-
       document.getElementById('lineupModal').classList.remove('hidden');
-    }
-
-    function closeLineupModal() {
-      document.getElementById('lineupModal').classList.add('hidden');
-    }
-
-    function saveLineupSetup() {
-      const hName = document.getElementById('inputLineupHomeName').value.trim();
-      const aName = document.getElementById('inputLineupAwayName').value.trim();
-      if (hName) state.teamNames.home = hName;
-      if (aName) state.teamNames.away = aName;
-
-      ['home', 'away'].forEach(team => {
-        const newRot = [];
-        INDEX_TO_POS.forEach(p => {
-          const val = parseInt(document.getElementById(`setup_${team}_${p}`).value) || p;
-          newRot.push(val);
-          getOrCreatePlayerStats(team, val);
-        });
-        state.rotations[team] = newRot;
-
-        const l1 = parseInt(document.getElementById(`setup_${team}_lib1`).value);
-        const l2 = parseInt(document.getElementById(`setup_${team}_lib2`).value);
-        state.liberos[team] = [];
-        if (!isNaN(l1)) { state.liberos[team].push(l1); getOrCreatePlayerStats(team, l1); }
-        if (!isNaN(l2)) { state.liberos[team].push(l2); getOrCreatePlayerStats(team, l2); }
+      
+      document.getElementById('inputLineupHomeName').value = teamNames.home;
+      document.getElementById('inputLineupAwayName').value = teamNames.away;
+      
+      ['home','away'].forEach(t => {
+        for(let i=1; i<=6; i++) {
+          document.getElementById(`setup_${t}_${i}`).value = lineups[t][i];
+        }
+        document.getElementById(`setup_${t}_lib1`).value = liberos[t].L1 || '';
+        document.getElementById(`setup_${t}_lib2`).value = liberos[t].L2 || '';
       });
-
-      document.getElementById('headerHomeName').textContent = state.teamNames.home;
-      document.getElementById('headerAwayName').textContent = state.teamNames.away;
-
-      closeLineupModal();
-      updateCourtAndPadsVisuals();
-      updateActiveSelectionUI();
-      showToast("Teams & Lineups saved!");
-      saveToLocalStorage();
     }
 
-    // ================= FAST RENAME =================
-    let pendingRenameTeam = 'home';
+    function closeLineupModal() { document.getElementById('lineupModal').classList.add('hidden'); }
+
+    function saveLineup() {
+      teamNames.home = document.getElementById('inputLineupHomeName').value || "HOME TEAM";
+      teamNames.away = document.getElementById('inputLineupAwayName').value || "AWAY TEAM";
+      
+      ['home','away'].forEach(t => {
+        // Clear independent sets so they don't leak
+        playerJerseys[t] = new Set();
+        
+        for(let i=1; i<=6; i++) {
+          let val = parseInt(document.getElementById(`setup_${t}_${i}`).value);
+          if(!isNaN(val)) {
+            lineups[t][i] = val;
+            playerJerseys[t].add(val);
+          }
+        }
+        
+        let l1 = parseInt(document.getElementById(`setup_${t}_lib1`).value);
+        let l2 = parseInt(document.getElementById(`setup_${t}_lib2`).value);
+        liberos[t].L1 = isNaN(l1) ? null : l1;
+        liberos[t].L2 = isNaN(l2) ? null : l2;
+        if(liberos[t].L1) playerJerseys[t].add(liberos[t].L1);
+        if(liberos[t].L2) playerJerseys[t].add(liberos[t].L2);
+      });
+      
+      closeLineupModal();
+      updateAllUI();
+      saveState();
+    }
 
     function openRenameModal(team) {
-      pendingRenameTeam = team;
-      document.getElementById('renameModalTitle').textContent = `Rename ${state.teamNames[team]}`;
-      document.getElementById('renameInput').value = state.teamNames[team];
-      document.getElementById('renameModal').classList.remove('hidden');
-    }
-
-    function closeRenameModal() {
-      document.getElementById('renameModal').classList.add('hidden');
-    }
-
-    function executeRename() {
-      const name = document.getElementById('renameInput').value.trim();
-      if (name) {
-        state.teamNames[pendingRenameTeam] = name.toUpperCase();
-        document.getElementById(`header${pendingRenameTeam === 'home' ? 'Home' : 'Away'}Name`).textContent = name.toUpperCase();
-        updateActiveSelectionUI();
-        saveToLocalStorage();
+      let currentName = teamNames[team];
+      let newName = prompt(`Enter new name for ${team.toUpperCase()} TEAM:`, currentName);
+      if (newName !== null && newName.trim() !== '') {
+        teamNames[team] = newName.trim().substring(0, 15);
+        updateAllUI();
+        saveState();
       }
-      closeRenameModal();
     }
 
-    // ================= STATS MODAL & CALCULATIONS =================
+    /* ================= STATS MODAL & CALCS ================= */
+    function openStatsModal() {
+      document.getElementById('statsModal').classList.remove('hidden');
+      renderCurrentStatsView();
+    }
+    function closeStatsModal() { document.getElementById('statsModal').classList.add('hidden'); }
+
     function switchStatsScope(scope) {
-      currentStatsScope = scope;
+      currentStatsScope = scope; 
       const scopes = ['match', 1, 2, 3, 4, 5];
       scopes.forEach(s => {
-        const btn = document.getElementById(`btnScope_${s}`);
-        if (!btn) return;
-        if (s === scope) {
+        let btn = document.getElementById(`btnScope_${s}`);
+        if(s === currentStatsScope) {
           btn.className = "touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-amber-500 text-slate-950 shrink-0 shadow";
         } else {
           btn.className = "touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0";
         }
       });
-      
-      const scopeText = scope === 'match' ? 'Whole Match' : `Set ${scope}`;
-      document.getElementById('statsHomeTeamHeader').textContent = `${state.teamNames.home} (${scopeText})`;
-      document.getElementById('statsAwayTeamHeader').textContent = `${state.teamNames.away} (${scopeText})`;
-      
       renderCurrentStatsView();
     }
 
-    function openStatsModal() {
-      switchStatsScope('match');
-      renderCurrentStatsView();
-      cancelResetPrompt();
-      document.getElementById('statsModal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    function closeStatsModal() {
-      cancelResetPrompt();
-      document.getElementById('statsModal').classList.add('hidden');
-    }
-
-    function switchStatsView(mode) {
-      currentStatsView = mode;
-      const btnSummary = document.getElementById('btnStatsViewSummary');
-      const btnDetailed = document.getElementById('btnStatsViewDetailed');
+    function switchStatsView(view) {
+      currentStatsView = view;
+      const btnSum = document.getElementById('btnStatsViewSummary');
+      const btnDet = document.getElementById('btnStatsViewDetailed');
       const tabsRow = document.getElementById('detailedTabsRow');
 
-      if (mode === 'summary') {
-        btnSummary.className = "py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow";
-        btnDetailed.className = "py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
+      if(view === 'summary') {
+        btnSum.className = "py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow";
+        btnDet.className = "py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
         tabsRow.classList.add('hidden');
       } else {
-        btnDetailed.className = "py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow";
-        btnSummary.className = "py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
+        btnDet.className = "py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-cyan-600 text-white shadow";
+        btnSum.className = "py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
         tabsRow.classList.remove('hidden');
       }
-
       renderCurrentStatsView();
-      lucide.createIcons();
     }
 
     function switchDetailedCategory(cat) {
-      detailedStatsCategory = cat;
-      ['all', 'attack', 'serve_rec', 'block'].forEach(c => {
-        const btn = document.getElementById(`btnDetailTab_${c}`);
-        if (c === cat) {
+      currentDetailedCategory = cat;
+      const tabs = ['all', 'attack', 'serve_rec', 'block'];
+      tabs.forEach(t => {
+        let btn = document.getElementById(`btnDetailTab_${t}`);
+        if(t === cat) {
           btn.className = "touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-cyan-600 text-white shrink-0";
         } else {
           btn.className = "touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0";
@@ -1612,346 +1449,120 @@
       renderCurrentStatsView();
     }
 
+    function getAggregatedStats(team, jersey = null) {
+      let aggr = JSON.parse(JSON.stringify(PLAYER_STATS_TEMPLATE));
+      let setsToSum = (currentStatsScope === 'match') ? [1,2,3,4,5] : [currentStatsScope];
+
+      setsToSum.forEach(setNum => {
+        if (jersey !== null) {
+           if(setStats[setNum][team][jersey]) {
+             let s = setStats[setNum][team][jersey];
+             for(let k in aggr) aggr[k] += s[k];
+           }
+        } else {
+           if (team === 'home') aggr.oppErrorPoints += setStats[setNum].homeOppErrors;
+           if (team === 'away') aggr.oppErrorPoints += setStats[setNum].awayOppErrors;
+        }
+      });
+      return aggr;
+    }
+
     function renderCurrentStatsView() {
+      let scopeText = currentStatsScope === 'match' ? "Whole Match" : `Set ${currentStatsScope}`;
+      document.getElementById('statsHomeTeamHeader').innerText = `${teamNames.home} - ${scopeText}`;
+      document.getElementById('statsAwayTeamHeader').innerText = `${teamNames.away} - ${scopeText}`;
+
       ['home', 'away'].forEach(team => {
         const thead = document.getElementById(`${team}StatsTableHeader`);
         const tbody = document.getElementById(`${team}StatsTableBody`);
         const tfoot = document.getElementById(`${team}StatsTableFoot`);
+        
+        thead.innerHTML = ''; tbody.innerHTML = ''; tfoot.innerHTML = '';
 
-        tbody.innerHTML = '';
-        thead.innerHTML = '';
-        tfoot.innerHTML = '';
-
-        const dataSource = currentStatsScope === 'match' ? state.stats[team] : (state.setStats[currentStatsScope][team] || {});
-        const playerJerseys = Object.keys(dataSource).map(Number).sort((a, b) => a - b);
-        const oppErrors = currentStatsScope === 'match' 
-          ? (state.oppErrors?.[team] || 0) 
-          : (state.setOppErrors?.[currentStatsScope]?.[team] || 0);
-
-        let totPts = 0;
-        let totKills = 0, totAttErrors = 0, totAttBlocked = 0, totAttInPlay = 0, totAttRebounds = 0, totAttAttempts = 0;
-        let totAces = 0, totServeErrors = 0, totServeInPlay = 0, totServes = 0;
-        let totBlocks = 0, totBlockRebounds = 0, totBlockTouches = 0, totBlockErrors = 0;
-        let totRecA = 0, totRecB = 0, totRecC = 0, totRecD = 0, totRecE = 0, totRecF = 0, totRecTotal = 0;
-
-        // Filter players: ONLY players legitimately belonging to this team with active stats
-        const activeJerseys = playerJerseys.filter(j => {
-          if (!playerBelongsToTeam(team, j)) return false;
-          const s = dataSource[j];
-          if (!s) return false;
-          const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
-          const recCount = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
-          const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
-          const srvTotal = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
-          const blkTotal = (s.blocks || 0) + (s.blockRebounds || 0) + (s.blockTouches || 0) + (s.blockErrors || 0);
-          
-          return (s.pts > 0 || recCount > 0 || attTotal > 0 || srvTotal > 0 || blkTotal > 0);
+        let activeJerseys = Array.from(playerJerseys[team]).filter(j => {
+           let st = getAggregatedStats(team, j);
+           let totalActions = st.points + st.attackAtt + st.serveAtt + (st.recA+st.recB+st.recC+st.recD+st.recE) + (st.blocks+st.blockErr+st.blockReb+st.blockTouch);
+           return totalActions > 0;
         });
+
+        let teamTot = JSON.parse(JSON.stringify(PLAYER_STATS_TEMPLATE));
+        let scopeOppErrors = getAggregatedStats(team).oppErrorPoints;
+        teamTot.oppErrorPoints = scopeOppErrors;
 
         activeJerseys.forEach(j => {
-          const s = dataSource[j];
-          const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
-          const recCount = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
-          const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
-          const srvTotal = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
-
-          totPts += s.pts || 0;
-          totKills += s.kills || 0;
-          totAttErrors += s.attackErrors || 0;
-          totAttBlocked += s.attackBlocked || 0;
-          totAttInPlay += s.attackInPlay || 0;
-          totAttRebounds += s.attackRebounds || 0;
-          totAttAttempts += attTotal;
-
-          totAces += s.aces || 0;
-          totServeErrors += s.serveErrors || 0;
-          totServeInPlay += s.serveInPlay || 0;
-          totServes += srvTotal;
-
-          totBlocks += s.blocks || 0;
-          totBlockRebounds += s.blockRebounds || 0;
-          totBlockTouches += s.blockTouches || 0;
-          totBlockErrors += s.blockErrors || 0;
-
-          totRecA += r.A || 0;
-          totRecB += r.B || 0;
-          totRecC += r.C || 0;
-          totRecD += r.D || 0;
-          totRecE += r.E || 0;
-          totRecF += r.F || 0;
-          totRecTotal += recCount;
+          let s = getAggregatedStats(team, j);
+          for(let k in teamTot) teamTot[k] += s[k];
         });
+        
+        teamTot.points += teamTot.oppErrorPoints;
 
-        // SUMMARY VIEW
         if (currentStatsView === 'summary') {
-          thead.innerHTML = `
-            <tr>
-              <th class="p-1">#</th>
-              <th class="p-1 text-center">Pts</th>
-              <th class="p-1 text-center">Kills</th>
-              <th class="p-1 text-center">Aces</th>
-              <th class="p-1 text-center">Blocks</th>
-              <th class="p-1 text-center">Rec (A–F)</th>
-              <th class="p-1 text-center">Pos%</th>
-            </tr>
-          `;
+          thead.innerHTML = `<tr><th class="p-1">#</th><th class="p-1">Pts</th><th class="p-1">Kill</th><th class="p-1">Ace</th><th class="p-1">Blk</th><th class="p-1">Rec(A-E)</th><th class="p-1">Pos%</th></tr>`;
+          
+          activeJerseys.forEach(j => {
+            let s = getAggregatedStats(team, j);
+            let tRec = s.recA+s.recB+s.recC+s.recD+s.recE;
+            let posPct = tRec > 0 ? (((s.recA+s.recB)/tRec)*100).toFixed(0)+'%' : '-';
+            tbody.innerHTML += `<tr><td class="p-1">#${j}</td><td class="p-1 text-white">${s.points}</td><td class="p-1">${s.kills}</td><td class="p-1">${s.aces}</td><td class="p-1">${s.blocks}</td><td class="p-1">${s.recA}/${s.recB}/${s.recC}/${s.recD}/${s.recE}</td><td class="p-1">${posPct}</td></tr>`;
+          });
+          
+          let ttRec = teamTot.recA+teamTot.recB+teamTot.recC+teamTot.recD+teamTot.recE;
+          let ttPosPct = ttRec > 0 ? (((teamTot.recA+teamTot.recB)/ttRec)*100).toFixed(0)+'%' : '-';
 
-          activeJerseys.forEach(jersey => {
-            const s = dataSource[jersey];
-            const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
-            const recCount = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
-            const recBreakdown = recCount > 0 ? `${r.A||0}/${r.B||0}/${r.C||0}/${r.D||0}/${r.E||0}/${r.F||0}` : '-';
-            const posRatio = recCount > 0 ? Math.round((((r.A || 0) + (r.B || 0)) / recCount) * 100) + '%' : '-';
-            const isLib = isLibero(team, jersey);
-
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-800/50";
-            tr.innerHTML = `
-              <td class="p-1 font-bold ${isLib ? 'text-emerald-400' : (team === 'home' ? 'text-amber-400' : 'text-purple-300')}">
-                #${jersey} ${isLib ? '<span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-500/50 px-1 rounded ml-0.5">L</span>' : ''}
-              </td>
-              <td class="p-1 text-center font-bold text-white">${s.pts}</td>
-              <td class="p-1 text-center">${s.kills}</td>
-              <td class="p-1 text-center">${s.aces}</td>
-              <td class="p-1 text-center">${s.blocks}</td>
-              <td class="p-1 text-center text-slate-300 text-[10px]">${recBreakdown}</td>
-              <td class="p-1 text-center font-semibold text-emerald-400 text-[10px]">${posRatio}</td>
-            `;
-            tbody.appendChild(tr);
+          tbody.innerHTML += `<tr><td class="p-1 text-rose-300 font-bold">OppErr</td><td class="p-1 text-white font-bold">${scopeOppErrors}</td><td colspan="5"></td></tr>`;
+          tfoot.innerHTML = `<tr><td class="p-1">TOT</td><td class="p-1">${teamTot.points}</td><td class="p-1">${teamTot.kills}</td><td class="p-1">${teamTot.aces}</td><td class="p-1">${teamTot.blocks}</td><td class="p-1">${teamTot.recA}/${teamTot.recB}/${teamTot.recC}/${teamTot.recD}/${teamTot.recE}</td><td class="p-1">${ttPosPct}</td></tr>`;
+        
+        } 
+        else if (currentDetailedCategory === 'all') {
+          thead.innerHTML = `<tr><th class="p-1">#</th><th class="p-1">Pts</th><th class="p-1">K/Att</th><th class="p-1">Eff%</th><th class="p-1">Aces/Srv</th><th class="p-1">Pos%</th></tr>`;
+          
+          activeJerseys.forEach(j => {
+            let s = getAggregatedStats(team, j);
+            let eff = s.attackAtt > 0 ? (((s.kills - s.attackErr - s.attackBlk) / s.attackAtt)*100).toFixed(1) : '-';
+            let tRec = s.recA+s.recB+s.recC+s.recD+s.recE;
+            let posPct = tRec > 0 ? (((s.recA+s.recB)/tRec)*100).toFixed(0)+'%' : '-';
+            tbody.innerHTML += `<tr><td class="p-1">#${j}</td><td class="p-1 text-white">${s.points}</td><td class="p-1">${s.kills}/${s.attackAtt}</td><td class="p-1">${eff !== '-' ? eff+'%' : '-'}</td><td class="p-1">${s.aces}/${s.serveAtt}</td><td class="p-1">${posPct}</td></tr>`;
           });
 
-          // Dedicated Opponent Error Row
-          const trOpp = document.createElement('tr');
-          trOpp.className = "bg-slate-900/60 text-slate-300";
-          trOpp.innerHTML = `
-            <td class="p-1 font-bold text-amber-300/90 italic">Opp Errors</td>
-            <td class="p-1 text-center font-bold text-amber-300/90">${oppErrors}</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-          `;
-          tbody.appendChild(trOpp);
-
-          const teamPosPct = totRecTotal > 0 ? Math.round(((totRecA + totRecB) / totRecTotal) * 100) + '%' : '-';
-          const totalTeamPts = totPts + oppErrors;
-
-          tfoot.innerHTML = `
-            <tr>
-              <td class="p-1 text-amber-300">Total</td>
-              <td class="p-1 text-center text-amber-300">${totalTeamPts}</td>
-              <td class="p-1 text-center">${totKills}</td>
-              <td class="p-1 text-center">${totAces}</td>
-              <td class="p-1 text-center">${totBlocks}</td>
-              <td class="p-1 text-center text-[10px]">${totRecA}/${totRecB}/${totRecC}/${totRecD}/${totRecE}/${totRecF}</td>
-              <td class="p-1 text-center text-emerald-400 text-[10px]">${teamPosPct}</td>
-            </tr>
-          `;
-          return;
+          tbody.innerHTML += `<tr><td class="p-1 text-rose-300 font-bold">OppErr</td><td class="p-1 text-white font-bold">${scopeOppErrors}</td><td colspan="4"></td></tr>`;
+          let tEff = teamTot.attackAtt > 0 ? (((teamTot.kills - teamTot.attackErr - teamTot.attackBlk) / teamTot.attackAtt)*100).toFixed(1) : '-';
+          let ttRec = teamTot.recA+teamTot.recB+teamTot.recC+teamTot.recD+teamTot.recE;
+          let ttPosPct = ttRec > 0 ? (((teamTot.recA+teamTot.recB)/ttRec)*100).toFixed(0)+'%' : '-';
+          tfoot.innerHTML = `<tr><td class="p-1">TOT</td><td class="p-1">${teamTot.points}</td><td class="p-1">${teamTot.kills}/${teamTot.attackAtt}</td><td class="p-1">${tEff !== '-' ? tEff+'%' : '-'}</td><td class="p-1">${teamTot.aces}/${teamTot.serveAtt}</td><td class="p-1">${ttPosPct}</td></tr>`;
         }
-
-        // DETAILED VIEW (Attack / Serve / Block / All)
-        if (detailedStatsCategory === 'attack') {
-          thead.innerHTML = `
-            <tr>
-              <th class="p-1">#</th>
-              <th class="p-1 text-center">Att</th>
-              <th class="p-1 text-center text-emerald-400">Kill</th>
-              <th class="p-1 text-center text-rose-400">Err</th>
-              <th class="p-1 text-center text-amber-400">Blkd</th>
-              <th class="p-1 text-center">InPlay</th>
-              <th class="p-1 text-center">Kill%</th>
-              <th class="p-1 text-center text-cyan-300">Eff%</th>
-            </tr>
-          `;
+        else if (currentDetailedCategory === 'attack') {
+          thead.innerHTML = `<tr><th class="p-1">#</th><th class="p-1">Total</th><th class="p-1">Kill</th><th class="p-1">Err</th><th class="p-1">Blkd</th><th class="p-1">InPlay</th><th class="p-1">Eff%</th></tr>`;
           activeJerseys.forEach(j => {
-            const s = dataSource[j];
-            const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
-            const killPct = attTotal > 0 ? Math.round(((s.kills || 0) / attTotal) * 100) + '%' : '-';
-            const eff = attTotal > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / attTotal * 100).toFixed(1) + '%' : '-';
-
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-800/50";
-            tr.innerHTML = `
-              <td class="p-1 font-bold ${team === 'home' ? 'text-amber-400' : 'text-purple-300'}">#${j}</td>
-              <td class="p-1 text-center font-bold text-white">${attTotal}</td>
-              <td class="p-1 text-center text-emerald-400 font-bold">${s.kills || 0}</td>
-              <td class="p-1 text-center text-rose-400">${s.attackErrors || 0}</td>
-              <td class="p-1 text-center text-amber-400">${s.attackBlocked || 0}</td>
-              <td class="p-1 text-center text-slate-400">${(s.attackInPlay || 0) + (s.attackRebounds || 0)}</td>
-              <td class="p-1 text-center text-[10px]">${killPct}</td>
-              <td class="p-1 text-center font-bold text-cyan-300 text-[10px]">${eff}</td>
-            `;
-            tbody.appendChild(tr);
+            let s = getAggregatedStats(team, j);
+            let inPlay = s.attackAtt - s.kills - s.attackErr - s.attackBlk;
+            let eff = s.attackAtt > 0 ? (((s.kills - s.attackErr - s.attackBlk) / s.attackAtt)*100).toFixed(1) : '-';
+            tbody.innerHTML += `<tr><td class="p-1">#${j}</td><td class="p-1">${s.attackAtt}</td><td class="p-1 text-emerald-400">${s.kills}</td><td class="p-1 text-rose-400">${s.attackErr}</td><td class="p-1 text-orange-400">${s.attackBlk}</td><td class="p-1">${inPlay}</td><td class="p-1 font-bold">${eff !== '-' ? eff+'%' : '-'}</td></tr>`;
           });
-
-          const teamKillPct = totAttAttempts > 0 ? Math.round((totKills / totAttAttempts) * 100) + '%' : '-';
-          const teamEff = totAttAttempts > 0 ? (((totKills - totAttErrors - totAttBlocked) / totAttAttempts) * 100).toFixed(1) + '%' : '-';
-          tfoot.innerHTML = `
-            <tr>
-              <td class="p-1 text-amber-300">Total</td>
-              <td class="p-1 text-center text-amber-300">${totAttAttempts}</td>
-              <td class="p-1 text-center text-emerald-400">${totKills}</td>
-              <td class="p-1 text-center text-rose-400">${totAttErrors}</td>
-              <td class="p-1 text-center text-amber-400">${totAttBlocked}</td>
-              <td class="p-1 text-center">${totAttInPlay + totAttRebounds}</td>
-              <td class="p-1 text-center text-[10px]">${teamKillPct}</td>
-              <td class="p-1 text-center text-cyan-300 text-[10px]">${teamEff}</td>
-            </tr>
-          `;
-        } else if (detailedStatsCategory === 'serve_rec') {
-          thead.innerHTML = `
-            <tr>
-              <th class="p-1">#</th>
-              <th class="p-1 text-center">Srv</th>
-              <th class="p-1 text-center text-emerald-400">Ace</th>
-              <th class="p-1 text-center text-rose-400">SErr</th>
-              <th class="p-1 text-center">Rec</th>
-              <th class="p-1 text-center text-[10px]">A/B/C/D/E/F</th>
-              <th class="p-1 text-center text-emerald-400">Pos%</th>
-            </tr>
-          `;
+          let tInPlay = teamTot.attackAtt - teamTot.kills - teamTot.attackErr - teamTot.attackBlk;
+          let tEff = teamTot.attackAtt > 0 ? (((teamTot.kills - teamTot.attackErr - teamTot.attackBlk) / teamTot.attackAtt)*100).toFixed(1) : '-';
+          tfoot.innerHTML = `<tr><td class="p-1">TOT</td><td class="p-1">${teamTot.attackAtt}</td><td class="p-1">${teamTot.kills}</td><td class="p-1">${teamTot.attackErr}</td><td class="p-1">${teamTot.attackBlk}</td><td class="p-1">${tInPlay}</td><td class="p-1">${tEff !== '-' ? tEff+'%' : '-'}</td></tr>`;
+        }
+        else if (currentDetailedCategory === 'serve_rec') {
+          thead.innerHTML = `<tr><th class="p-1">#</th><th class="p-1">Srv</th><th class="p-1">Ace</th><th class="p-1">SErr</th><th class="p-1">Rec</th><th class="p-1 text-[9px]">A/B/C/D/E</th><th class="p-1">Pos%</th></tr>`;
           activeJerseys.forEach(j => {
-            const s = dataSource[j];
-            const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
-            const srvTot = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
-            const recTot = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
-            const posPct = recTot > 0 ? Math.round((((r.A || 0) + (r.B || 0)) / recTot) * 100) + '%' : '-';
-
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-800/50";
-            tr.innerHTML = `
-              <td class="p-1 font-bold ${team === 'home' ? 'text-amber-400' : 'text-purple-300'}">#${j}</td>
-              <td class="p-1 text-center font-bold text-white">${srvTot}</td>
-              <td class="p-1 text-center text-emerald-400 font-bold">${s.aces || 0}</td>
-              <td class="p-1 text-center text-rose-400">${s.serveErrors || 0}</td>
-              <td class="p-1 text-center font-bold text-white">${recTot}</td>
-              <td class="p-1 text-center text-[10px] text-slate-300">${r.A||0}/${r.B||0}/${r.C||0}/${r.D||0}/${r.E||0}/${r.F||0}</td>
-              <td class="p-1 text-center text-emerald-400 font-bold text-[10px]">${posPct}</td>
-            `;
-            tbody.appendChild(tr);
+            let s = getAggregatedStats(team, j);
+            let tRec = s.recA+s.recB+s.recC+s.recD+s.recE;
+            let posPct = tRec > 0 ? (((s.recA+s.recB)/tRec)*100).toFixed(0)+'%' : '-';
+            tbody.innerHTML += `<tr><td class="p-1">#${j}</td><td class="p-1">${s.serveAtt}</td><td class="p-1 text-emerald-400">${s.aces}</td><td class="p-1 text-rose-400">${s.serveErr}</td><td class="p-1">${tRec}</td><td class="p-1 tracking-tighter">${s.recA}/${s.recB}/${s.recC}/${s.recD}/${s.recE}</td><td class="p-1">${posPct}</td></tr>`;
           });
-
-          const teamPosPct = totRecTotal > 0 ? Math.round(((totRecA + totRecB) / totRecTotal) * 100) + '%' : '-';
-          tfoot.innerHTML = `
-            <tr>
-              <td class="p-1 text-amber-300">Total</td>
-              <td class="p-1 text-center text-amber-300">${totServes}</td>
-              <td class="p-1 text-center text-emerald-400">${totAces}</td>
-              <td class="p-1 text-center text-rose-400">${totServeErrors}</td>
-              <td class="p-1 text-center text-amber-300">${totRecTotal}</td>
-              <td class="p-1 text-center text-[10px]">${totRecA}/${totRecB}/${totRecC}/${totRecD}/${totRecE}/${totRecF}</td>
-              <td class="p-1 text-center text-emerald-400 text-[10px]">${teamPosPct}</td>
-            </tr>
-          `;
-        } else if (detailedStatsCategory === 'block') {
-          thead.innerHTML = `
-            <tr>
-              <th class="p-1">#</th>
-              <th class="p-1 text-center text-emerald-400 font-bold">Blk Score</th>
-              <th class="p-1 text-center">Rebound</th>
-              <th class="p-1 text-center">Touch</th>
-              <th class="p-1 text-center text-rose-400">Blk Err</th>
-              <th class="p-1 text-center text-cyan-300">Total Actions</th>
-            </tr>
-          `;
+          let ttRec = teamTot.recA+teamTot.recB+teamTot.recC+teamTot.recD+teamTot.recE;
+          let ttPosPct = ttRec > 0 ? (((teamTot.recA+teamTot.recB)/ttRec)*100).toFixed(0)+'%' : '-';
+          tfoot.innerHTML = `<tr><td class="p-1">TOT</td><td class="p-1">${teamTot.serveAtt}</td><td class="p-1">${teamTot.aces}</td><td class="p-1">${teamTot.serveErr}</td><td class="p-1">${ttRec}</td><td class="p-1 tracking-tighter">${teamTot.recA}/${teamTot.recB}/${teamTot.recC}/${teamTot.recD}/${teamTot.recE}</td><td class="p-1">${ttPosPct}</td></tr>`;
+        }
+        else if (currentDetailedCategory === 'block') {
+          thead.innerHTML = `<tr><th class="p-1">#</th><th class="p-1">Score</th><th class="p-1">Rebound</th><th class="p-1">Touch</th><th class="p-1">Err</th><th class="p-1">Tot</th></tr>`;
           activeJerseys.forEach(j => {
-            const s = dataSource[j];
-            const totalBlkActions = (s.blocks || 0) + (s.blockRebounds || 0) + (s.blockTouches || 0) + (s.blockErrors || 0);
-
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-800/50";
-            tr.innerHTML = `
-              <td class="p-1 font-bold ${team === 'home' ? 'text-amber-400' : 'text-purple-300'}">#${j}</td>
-              <td class="p-1 text-center text-emerald-400 font-bold">${s.blocks || 0}</td>
-              <td class="p-1 text-center text-slate-300">${s.blockRebounds || 0}</td>
-              <td class="p-1 text-center text-slate-300">${s.blockTouches || 0}</td>
-              <td class="p-1 text-center text-rose-400">${s.blockErrors || 0}</td>
-              <td class="p-1 text-center font-bold text-cyan-300">${totalBlkActions}</td>
-            `;
-            tbody.appendChild(tr);
+            let s = getAggregatedStats(team, j);
+            let tBlk = s.blocks + s.blockReb + s.blockTouch + s.blockErr;
+            tbody.innerHTML += `<tr><td class="p-1">#${j}</td><td class="p-1 text-emerald-400">${s.blocks}</td><td class="p-1">${s.blockReb}</td><td class="p-1 text-cyan-400">${s.blockTouch}</td><td class="p-1 text-rose-400">${s.blockErr}</td><td class="p-1">${tBlk}</td></tr>`;
           });
-
-          const totalAllBlock = totBlocks + totBlockRebounds + totBlockTouches + totBlockErrors;
-          tfoot.innerHTML = `
-            <tr>
-              <td class="p-1 text-amber-300">Total</td>
-              <td class="p-1 text-center text-emerald-400">${totBlocks}</td>
-              <td class="p-1 text-center">${totBlockRebounds}</td>
-              <td class="p-1 text-center">${totBlockTouches}</td>
-              <td class="p-1 text-center text-rose-400">${totBlockErrors}</td>
-              <td class="p-1 text-center text-cyan-300">${totalAllBlock}</td>
-            </tr>
-          `;
-        } else {
-          // 'all' Detailed View
-          thead.innerHTML = `
-            <tr>
-              <th class="p-1">#</th>
-              <th class="p-1 text-center">Pts</th>
-              <th class="p-1 text-center">K(Att)</th>
-              <th class="p-1 text-center text-cyan-300">Eff%</th>
-              <th class="p-1 text-center">Ace(Srv)</th>
-              <th class="p-1 text-center">Blk(Pts)</th>
-              <th class="p-1 text-center text-emerald-400">Pos%</th>
-            </tr>
-          `;
-          activeJerseys.forEach(j => {
-            const s = dataSource[j];
-            const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
-            const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
-            const srvTotal = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
-            const recTot = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
-            const eff = attTotal > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / attTotal * 100).toFixed(1) + '%' : '-';
-            const posPct = recTot > 0 ? Math.round((((r.A || 0) + (r.B || 0)) / recTot) * 100) + '%' : '-';
-            const isLib = isLibero(team, j);
-
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-800/50";
-            tr.innerHTML = `
-              <td class="p-1 font-bold ${isLib ? 'text-emerald-400' : (team === 'home' ? 'text-amber-400' : 'text-purple-300')}">
-                #${j}${isLib ? 'L' : ''}
-              </td>
-              <td class="p-1 text-center font-bold text-white">${s.pts || 0}</td>
-              <td class="p-1 text-center">${s.kills || 0}<span class="text-[9px] text-slate-400">/${attTotal}</span></td>
-              <td class="p-1 text-center font-bold text-cyan-300 text-[10px]">${eff}</td>
-              <td class="p-1 text-center">${s.aces || 0}<span class="text-[9px] text-slate-400">/${srvTotal}</span></td>
-              <td class="p-1 text-center font-bold text-emerald-400">${s.blocks || 0}</td>
-              <td class="p-1 text-center text-emerald-400 text-[10px]">${posPct}</td>
-            `;
-            tbody.appendChild(tr);
-          });
-
-          // Dedicated Opponent Error Row in All Skills
-          const trOpp = document.createElement('tr');
-          trOpp.className = "bg-slate-900/60 text-slate-300";
-          trOpp.innerHTML = `
-            <td class="p-1 font-bold text-amber-300/90 italic">Opp Errors</td>
-            <td class="p-1 text-center font-bold text-amber-300/90">${oppErrors}</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-            <td class="p-1 text-center text-slate-500">-</td>
-          `;
-          tbody.appendChild(trOpp);
-
-          const teamEff = totAttAttempts > 0 ? (((totKills - totAttErrors - totAttBlocked) / totAttAttempts) * 100).toFixed(1) + '%' : '-';
-          const teamPosPct = totRecTotal > 0 ? Math.round(((totRecA + totRecB) / totRecTotal) * 100) + '%' : '-';
-          const totalTeamPts = totPts + oppErrors;
-
-          tfoot.innerHTML = `
-            <tr>
-              <td class="p-1 text-amber-300">Total</td>
-              <td class="p-1 text-center text-amber-300">${totalTeamPts}</td>
-              <td class="p-1 text-center">${totKills}/${totAttAttempts}</td>
-              <td class="p-1 text-center text-cyan-300 text-[10px]">${teamEff}</td>
-              <td class="p-1 text-center">${totAces}/${totServes}</td>
-              <td class="p-1 text-center text-emerald-400">${totBlocks}</td>
-              <td class="p-1 text-center text-emerald-400 text-[10px]">${teamPosPct}</td>
-            </tr>
-          `;
+          let ttBlk = teamTot.blocks + teamTot.blockReb + teamTot.blockTouch + teamTot.blockErr;
+          tfoot.innerHTML = `<tr><td class="p-1">TOT</td><td class="p-1">${teamTot.blocks}</td><td class="p-1">${teamTot.blockReb}</td><td class="p-1">${teamTot.blockTouch}</td><td class="p-1">${teamTot.blockErr}</td><td class="p-1">${ttBlk}</td></tr>`;
         }
       });
     }
@@ -1959,133 +1570,78 @@
     function confirmResetAll() {
       document.getElementById('resetConfirmPanel').classList.remove('hidden');
     }
-
     function cancelResetPrompt() {
-      const panel = document.getElementById('resetConfirmPanel');
-      if (panel) panel.classList.add('hidden');
+      document.getElementById('resetConfirmPanel').classList.add('hidden');
     }
-
     function executeResetAll() {
-      ['1', '2', '3', '4', '5'].forEach(s => {
-        state.sets[s] = { home: 0, away: 0 };
-        state.substitutions.home[s] = 0;
-        state.substitutions.away[s] = 0;
-        if (state.setOppErrors) state.setOppErrors[s] = { home: 0, away: 0 };
-      });
-      state.setsWon = { home: 0, away: 0 };
-      state.oppErrors = { home: 0, away: 0 };
-      state.history = [];
-      state.stats = { home: {}, away: {} };
-      state.setStats = { 1: {home:{},away:{}}, 2: {home:{},away:{}}, 3: {home:{},away:{}}, 4: {home:{},away:{}}, 5: {home:{},away:{}} };
-
-      state.rotations.home.forEach(num => getOrCreatePlayerStats('home', num));
-      state.rotations.away.forEach(num => getOrCreatePlayerStats('away', num));
-
-      cancelResetPrompt();
-      renderCurrentStatsView();
-      updateScoreDisplay();
-      updateCourtAndPadsVisuals();
-      saveToLocalStorage();
-      showToast("Match stats reset!");
+      localStorage.removeItem('vbTrackerState');
+      location.reload();
     }
 
+    /* ================= DATA EXPORT ================= */
     function downloadCSV() {
-      const scope = currentStatsScope;
-      const scopeText = scope === 'match' ? 'Whole Match' : `Set ${scope}`;
-      let csv = "Scope,Team,Player,Role,Points,Kills,AttackErrors,AttackBlocked,AttackInPlay,AttackRebounds,TotalAttacks,KillPct,HittingEff,Aces,ServeErrors,ServeInPlay,TotalServes,BlockScores,BlockRebounds,BlockTouches,BlockErrors,Rec_A,Rec_B,Rec_C,Rec_D,Rec_E,Rec_F,Total_Receives,Pos_Rec_Pct\n";
-      
+      let csv = "Scope,Team,Jersey,Points,Kills,Attack_Errors,Attack_Blocked,Attack_Attempts,Hit_Eff_Pct,Aces,Serve_Errors,Serve_Attempts,Blocks_Score,Block_Rebounds,Block_Touches,Block_Errors,Rec_A,Rec_B,Rec_C,Rec_D,Rec_E,Pos_Rec_Pct\n";
+      let scopeText = currentStatsScope === 'match' ? 'WholeMatch' : `Set${currentStatsScope}`;
+
       ['home', 'away'].forEach(team => {
-        const teamName = state.teamNames[team];
-        const dataSource = scope === 'match' ? state.stats[team] : state.setStats[scope][team];
-        const playerJerseys = Object.keys(dataSource).map(Number).sort((a, b) => a - b);
-        const oppErrors = scope === 'match' ? (state.oppErrors?.[team] || 0) : (state.setOppErrors?.[scope]?.[team] || 0);
-
-        playerJerseys.forEach(jersey => {
-          if (!playerBelongsToTeam(team, jersey)) return;
-          const s = dataSource[jersey];
-          const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
-          const totalRec = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
-          const posPct = totalRec > 0 ? Math.round((((r.A || 0) + (r.B || 0)) / totalRec) * 100) + '%' : '0%';
-          const role = isLibero(team, jersey) ? "Libero" : "Player";
-
-          const totalAtt = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
-          const killPct = totalAtt > 0 ? Math.round(((s.kills || 0) / totalAtt) * 100) + '%' : '0%';
-          const eff = totalAtt > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / totalAtt * 100).toFixed(1) + '%' : '0.0%';
-          const totalSrv = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
-
-          csv += `"${scopeText}","${teamName}",#${jersey},${role},${s.pts||0},${s.kills||0},${s.attackErrors||0},${s.attackBlocked||0},${s.attackInPlay||0},${s.attackRebounds||0},${totalAtt},${killPct},${eff},${s.aces||0},${s.serveErrors||0},${s.serveInPlay||0},${totalSrv},${s.blocks||0},${s.blockRebounds||0},${s.blockTouches||0},${s.blockErrors||0},${r.A||0},${r.B||0},${r.C||0},${r.D||0},${r.E||0},${r.F||0},${totalRec},${posPct}\n`;
+        let tName = teamNames[team];
+        let activeJerseys = Array.from(playerJerseys[team]).filter(j => {
+           let st = getAggregatedStats(team, j);
+           return (st.points + st.attackAtt + st.serveAtt + st.recA + st.recB + st.recC + st.recD + st.recE + st.blocks + st.blockErr + st.blockReb + st.blockTouch) > 0;
         });
 
-        // Add Opponent Errors row in CSV
-        csv += `"${scopeText}","${teamName}","Opponent Errors","Team",${oppErrors},0,0,0,0,0,0,0%,0.0%,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0%\n`;
+        activeJerseys.forEach(j => {
+          let s = getAggregatedStats(team, j);
+          let tRec = s.recA+s.recB+s.recC+s.recD+s.recE;
+          let posPct = tRec > 0 ? (((s.recA+s.recB)/tRec)*100).toFixed(1)+'%' : '0.0%';
+          let eff = s.attackAtt > 0 ? (((s.kills - s.attackErr - s.attackBlk) / s.attackAtt)*100).toFixed(1)+'%' : '0.0%';
+
+          csv += `${scopeText},${tName},${j},${s.points},${s.kills},${s.attackErr},${s.attackBlk},${s.attackAtt},${eff},${s.aces},${s.serveErr},${s.serveAtt},${s.blocks},${s.blockReb},${s.blockTouch},${s.blockErr},${s.recA},${s.recB},${s.recC},${s.recD},${s.recE},${posPct}\n`;
+        });
       });
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `volleyball_stats_${scope === 'match' ? 'match' : 'set' + scope}.csv`;
+      a.setAttribute('hidden', '');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `volleyball_stats_${scopeText}.csv`);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      showToast(`Detailed CSV (${scopeText}) Downloaded!`);
     }
 
-    // ================= TOAST NOTIFICATION =================
-    let toastTimeout = null;
-    function showToast(msg) {
-      const toast = document.getElementById('toastNotification');
-      const text = document.getElementById('toastText');
-      text.textContent = msg;
-      toast.style.opacity = '1';
-      if (toastTimeout) clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        toast.style.opacity = '0';
-      }, 1500);
+    /* ================= LOCAL STORAGE ================= */
+    function saveState() {
+      const state = {
+        currentSet, scores, setsWon, subsUsed, teamNames,
+        lineups, liberos, activeLibero, activeSelection, historyStack, setStats,
+        playerJerseys: { home: Array.from(playerJerseys.home), away: Array.from(playerJerseys.away) }
+      };
+      localStorage.setItem('vbTrackerState', JSON.stringify(state));
     }
 
-    // ================= LOCAL STORAGE PERSISTENCE =================
-    function saveToLocalStorage() {
-      try {
-        localStorage.setItem('vb_tracker_state_v5', JSON.stringify(state));
-      } catch (e) {}
-    }
-
-    function loadFromLocalStorage() {
-      try {
-        const raw = localStorage.getItem('vb_tracker_state_v5') || localStorage.getItem('vb_tracker_state_v4');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed.sets) state.sets = parsed.sets;
-          if (parsed.teamNames) state.teamNames = parsed.teamNames;
-          if (parsed.rotations) state.rotations = parsed.rotations;
-          if (parsed.liberos) state.liberos = parsed.liberos;
-          if (parsed.liberoState) state.liberoState = parsed.liberoState;
-          if (parsed.substitutions) state.substitutions = parsed.substitutions;
-          if (parsed.oppErrors) state.oppErrors = parsed.oppErrors;
-          if (parsed.setOppErrors) state.setOppErrors = parsed.setOppErrors;
-          if (parsed.setStats) state.setStats = parsed.setStats;
-          if (parsed.history) state.history = parsed.history;
-          if (parsed.currentSet) state.currentSet = parsed.currentSet;
+    function loadState() {
+      const saved = localStorage.getItem('vbTrackerState');
+      if (saved) {
+        const state = JSON.parse(saved);
+        currentSet = state.currentSet || 1;
+        scores = state.scores || scores;
+        setsWon = state.setsWon || setsWon;
+        subsUsed = state.subsUsed || subsUsed;
+        teamNames = state.teamNames || teamNames;
+        lineups = state.lineups || lineups;
+        liberos = state.liberos || liberos;
+        activeLibero = state.activeLibero || activeLibero;
+        activeSelection = state.activeSelection || activeSelection;
+        historyStack = state.historyStack || [];
+        setStats = state.setStats || setStats;
+        if(state.playerJerseys) {
+          playerJerseys.home = new Set(state.playerJerseys.home);
+          playerJerseys.away = new Set(state.playerJerseys.away);
         }
-      } catch (e) {}
-    }
-
-    window.onload = function() {
-      loadFromLocalStorage();
-
-      document.getElementById('headerHomeName').textContent = state.teamNames.home;
-      document.getElementById('headerAwayName').textContent = state.teamNames.away;
-
-      switchSet(state.currentSet);
-      renderOutcomes();
-      updateCourtAndPadsVisuals();
-      updateActiveSelectionUI();
-
-      if (window.lucide) {
-        lucide.createIcons();
       }
-    };
+    }
   </script>
 </body>
 </html>
