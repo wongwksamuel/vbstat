@@ -426,6 +426,17 @@
 
       <!-- View Selector Toggle -->
       <div class="flex flex-col gap-2 pt-2 pb-1 border-b border-slate-800">
+        
+        <!-- Scope Selector (Match vs Sets) -->
+        <div id="statsScopeRow" class="flex items-center gap-1 overflow-x-auto hide-scrollbar pb-1.5 border-b border-slate-800/80">
+          <button onclick="switchStatsScope('match')" id="btnScope_match" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-amber-500 text-slate-950 shrink-0 shadow">Match (All)</button>
+          <button onclick="switchStatsScope(1)" id="btnScope_1" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 1</button>
+          <button onclick="switchStatsScope(2)" id="btnScope_2" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 2</button>
+          <button onclick="switchStatsScope(3)" id="btnScope_3" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 3</button>
+          <button onclick="switchStatsScope(4)" id="btnScope_4" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 4</button>
+          <button onclick="switchStatsScope(5)" id="btnScope_5" class="touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Set 5</button>
+        </div>
+
         <div class="grid grid-cols-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
           <button onclick="switchStatsView('summary')" id="btnStatsViewSummary" class="py-1 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow">
             <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i> Summary
@@ -663,11 +674,15 @@
         away: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
       },
       stats: { home: {}, away: {} },
+      setStats: {
+        1: { home: {}, away: {} }, 2: { home: {}, away: {} }, 3: { home: {}, away: {} }, 4: { home: {}, away: {} }, 5: { home: {}, away: {} }
+      },
       history: []
     };
 
     let currentStatsView = 'summary';
     let detailedStatsCategory = 'all';
+    let currentStatsScope = 'match';
 
     const POS_TO_INDEX = { 1: 0, 6: 1, 5: 2, 4: 3, 3: 4, 2: 5 };
     const INDEX_TO_POS = [1, 6, 5, 4, 3, 2];
@@ -679,26 +694,25 @@
       return libs.includes(parseInt(jersey));
     }
 
-    function getOrCreatePlayerStats(team, jersey) {
-      if (!state.stats[team][jersey]) {
-        state.stats[team][jersey] = {
-          pts: 0,
-          kills: 0,
-          attackErrors: 0,
-          attackBlocked: 0,
-          attackInPlay: 0,
-          attackRebounds: 0,
-          aces: 0,
-          serveErrors: 0,
-          serveInPlay: 0,
-          blocks: 0,
-          blockRebounds: 0,
-          blockTouches: 0,
-          blockErrors: 0,
-          receives: { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 }
-        };
+    function getOrCreatePlayerStats(team, jersey, setNum = null) {
+      const template = () => ({
+        pts: 0, kills: 0, attackErrors: 0, attackBlocked: 0, attackInPlay: 0, attackRebounds: 0,
+        aces: 0, serveErrors: 0, serveInPlay: 0,
+        blocks: 0, blockRebounds: 0, blockTouches: 0, blockErrors: 0,
+        receives: { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 }
+      });
+
+      if (!state.stats[team][jersey]) state.stats[team][jersey] = template();
+      
+      if (!state.setStats) {
+        state.setStats = { 1: {home:{},away:{}}, 2: {home:{},away:{}}, 3: {home:{},away:{}}, 4: {home:{},away:{}}, 5: {home:{},away:{}} };
       }
-      return state.stats[team][jersey];
+      
+      for (let i = 1; i <= 5; i++) {
+        if (!state.setStats[i][team][jersey]) state.setStats[i][team][jersey] = template();
+      }
+
+      return setNum ? state.setStats[setNum][team][jersey] : state.stats[team][jersey];
     }
 
     // Ensure all starters have stats objects
@@ -847,45 +861,53 @@
       const prevScore = { home: curSet.home, away: curSet.away };
       const team = state.activeTeam;
       const playerNum = state.activePlayer;
-      const playerStats = getOrCreatePlayerStats(team, playerNum);
 
       let pointAwarded = null;
+
+      const targets = [
+        getOrCreatePlayerStats(team, playerNum),                   // Match Stats
+        getOrCreatePlayerStats(team, playerNum, state.currentSet)  // Current Set Stats
+      ];
+
+      targets.forEach(ps => {
+        if (outcomeItem.pointFor === 'same') {
+          ps.pts += 1;
+          if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'ace') ps.aces++;
+          if (state.activeSkill === 'Attack' && outcomeItem.outcome === 'kill') ps.kills++;
+          if (state.activeSkill === 'Block' && outcomeItem.outcome === 'block_score') ps.blocks++;
+        } else if (outcomeItem.pointFor === 'opposite') {
+          if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'error') ps.serveErrors++;
+          if (state.activeSkill === 'Attack') {
+            if (outcomeItem.outcome === 'blocked') ps.attackBlocked++;
+            else if (outcomeItem.outcome === 'error') ps.attackErrors++;
+          }
+          if (state.activeSkill === 'Block' && outcomeItem.outcome === 'error') ps.blockErrors++;
+        }
+
+        if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'in_play') {
+          ps.serveInPlay = (ps.serveInPlay || 0) + 1;
+        }
+        if (state.activeSkill === 'Attack') {
+          if (outcomeItem.outcome === 'in_play') ps.attackInPlay = (ps.attackInPlay || 0) + 1;
+          if (outcomeItem.outcome === 'rebound') ps.attackRebounds = (ps.attackRebounds || 0) + 1;
+        }
+        if (state.activeSkill === 'Block') {
+          if (outcomeItem.outcome === 'rebound') ps.blockRebounds = (ps.blockRebounds || 0) + 1;
+          if (outcomeItem.outcome === 'touch') ps.blockTouches = (ps.blockTouches || 0) + 1;
+        }
+
+        if (state.activeSkill === 'Receive' && outcomeItem.grade) {
+          ps.receives[outcomeItem.grade] = (ps.receives[outcomeItem.grade] || 0) + 1;
+        }
+      });
 
       if (outcomeItem.pointFor === 'same') {
         curSet[team] += 1;
         pointAwarded = team;
-        playerStats.pts += 1;
-
-        if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'ace') playerStats.aces++;
-        if (state.activeSkill === 'Attack' && outcomeItem.outcome === 'kill') playerStats.kills++;
-        if (state.activeSkill === 'Block' && outcomeItem.outcome === 'block_score') playerStats.blocks++;
       } else if (outcomeItem.pointFor === 'opposite') {
         const oppTeam = team === 'home' ? 'away' : 'home';
         curSet[oppTeam] += 1;
         pointAwarded = oppTeam;
-
-        if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'error') playerStats.serveErrors++;
-        if (state.activeSkill === 'Attack') {
-          if (outcomeItem.outcome === 'blocked') playerStats.attackBlocked++;
-          else if (outcomeItem.outcome === 'error') playerStats.attackErrors++;
-        }
-        if (state.activeSkill === 'Block' && outcomeItem.outcome === 'error') playerStats.blockErrors++;
-      }
-
-      if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'in_play') {
-        playerStats.serveInPlay = (playerStats.serveInPlay || 0) + 1;
-      }
-      if (state.activeSkill === 'Attack') {
-        if (outcomeItem.outcome === 'in_play') playerStats.attackInPlay = (playerStats.attackInPlay || 0) + 1;
-        if (outcomeItem.outcome === 'rebound') playerStats.attackRebounds = (playerStats.attackRebounds || 0) + 1;
-      }
-      if (state.activeSkill === 'Block') {
-        if (outcomeItem.outcome === 'rebound') playerStats.blockRebounds = (playerStats.blockRebounds || 0) + 1;
-        if (outcomeItem.outcome === 'touch') playerStats.blockTouches = (playerStats.blockTouches || 0) + 1;
-      }
-
-      if (state.activeSkill === 'Receive' && outcomeItem.grade) {
-        playerStats.receives[outcomeItem.grade] = (playerStats.receives[outcomeItem.grade] || 0) + 1;
       }
 
       state.history.push({
@@ -978,29 +1000,35 @@
         state.sets[last.set].home = last.prevScore.home;
         state.sets[last.set].away = last.prevScore.away;
 
-        const ps = getOrCreatePlayerStats(last.team, last.player);
-        if (last.pointAwarded === last.team) ps.pts = Math.max(0, ps.pts - 1);
-        if (last.outcome === 'ace') ps.aces = Math.max(0, ps.aces - 1);
-        if (last.outcome === 'kill') ps.kills = Math.max(0, ps.kills - 1);
-        if (last.outcome === 'block_score') ps.blocks = Math.max(0, ps.blocks - 1);
-        if (last.outcome === 'error' && last.skill === 'Serve') ps.serveErrors = Math.max(0, ps.serveErrors - 1);
-        if (last.skill === 'Attack') {
-          if (last.outcome === 'error') ps.attackErrors = Math.max(0, ps.attackErrors - 1);
-          if (last.outcome === 'blocked') ps.attackBlocked = Math.max(0, (ps.attackBlocked || 1) - 1);
-          if (last.outcome === 'in_play') ps.attackInPlay = Math.max(0, (ps.attackInPlay || 1) - 1);
-          if (last.outcome === 'rebound') ps.attackRebounds = Math.max(0, (ps.attackRebounds || 1) - 1);
-        }
-        if (last.skill === 'Serve' && last.outcome === 'in_play') {
-          ps.serveInPlay = Math.max(0, (ps.serveInPlay || 1) - 1);
-        }
-        if (last.skill === 'Block') {
-          if (last.outcome === 'rebound') ps.blockRebounds = Math.max(0, (ps.blockRebounds || 1) - 1);
-          if (last.outcome === 'touch') ps.blockTouches = Math.max(0, (ps.blockTouches || 1) - 1);
-          if (last.outcome === 'error') ps.blockErrors = Math.max(0, (ps.blockErrors || 1) - 1);
-        }
-        if (last.skill === 'Receive' && last.grade && ps.receives[last.grade] > 0) {
-          ps.receives[last.grade]--;
-        }
+        const targets = [
+          getOrCreatePlayerStats(last.team, last.player),
+          getOrCreatePlayerStats(last.team, last.player, last.set)
+        ];
+
+        targets.forEach(ps => {
+          if (last.pointAwarded === last.team) ps.pts = Math.max(0, ps.pts - 1);
+          if (last.outcome === 'ace') ps.aces = Math.max(0, ps.aces - 1);
+          if (last.outcome === 'kill') ps.kills = Math.max(0, ps.kills - 1);
+          if (last.outcome === 'block_score') ps.blocks = Math.max(0, ps.blocks - 1);
+          if (last.outcome === 'error' && last.skill === 'Serve') ps.serveErrors = Math.max(0, ps.serveErrors - 1);
+          if (last.skill === 'Attack') {
+            if (last.outcome === 'error') ps.attackErrors = Math.max(0, ps.attackErrors - 1);
+            if (last.outcome === 'blocked') ps.attackBlocked = Math.max(0, (ps.attackBlocked || 1) - 1);
+            if (last.outcome === 'in_play') ps.attackInPlay = Math.max(0, (ps.attackInPlay || 1) - 1);
+            if (last.outcome === 'rebound') ps.attackRebounds = Math.max(0, (ps.attackRebounds || 1) - 1);
+          }
+          if (last.skill === 'Serve' && last.outcome === 'in_play') {
+            ps.serveInPlay = Math.max(0, (ps.serveInPlay || 1) - 1);
+          }
+          if (last.skill === 'Block') {
+            if (last.outcome === 'rebound') ps.blockRebounds = Math.max(0, (ps.blockRebounds || 1) - 1);
+            if (last.outcome === 'touch') ps.blockTouches = Math.max(0, (ps.blockTouches || 1) - 1);
+            if (last.outcome === 'error') ps.blockErrors = Math.max(0, (ps.blockErrors || 1) - 1);
+          }
+          if (last.skill === 'Receive' && last.grade && ps.receives[last.grade] > 0) {
+            ps.receives[last.grade]--;
+          }
+        });
       } else if (last.type === 'scoreAdjust') {
         state.sets[last.set].home = last.prevScore.home;
         state.sets[last.set].away = last.prevScore.away;
@@ -1403,9 +1431,28 @@
     }
 
     // ================= STATS MODAL & CALCULATIONS =================
+    function switchStatsScope(scope) {
+      currentStatsScope = scope;
+      const scopes = ['match', 1, 2, 3, 4, 5];
+      scopes.forEach(s => {
+        const btn = document.getElementById(`btnScope_${s}`);
+        if (!btn) return;
+        if (s === scope) {
+          btn.className = "touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-amber-500 text-slate-950 shrink-0 shadow";
+        } else {
+          btn.className = "touch-press px-3 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0";
+        }
+      });
+      
+      const scopeText = scope === 'match' ? 'Whole Match' : `Set ${scope}`;
+      document.getElementById('statsHomeTeamHeader').textContent = `${state.teamNames.home} (${scopeText})`;
+      document.getElementById('statsAwayTeamHeader').textContent = `${state.teamNames.away} (${scopeText})`;
+      
+      renderCurrentStatsView();
+    }
+
     function openStatsModal() {
-      document.getElementById('statsHomeTeamHeader').textContent = `${state.teamNames.home} Stats`;
-      document.getElementById('statsAwayTeamHeader').textContent = `${state.teamNames.away} Stats`;
+      switchStatsScope('match');
       renderCurrentStatsView();
       cancelResetPrompt();
       document.getElementById('statsModal').classList.remove('hidden');
@@ -1460,7 +1507,8 @@
         thead.innerHTML = '';
         tfoot.innerHTML = '';
 
-        const playerJerseys = Object.keys(state.stats[team]).map(Number).sort((a, b) => a - b);
+        const dataSource = currentStatsScope === 'match' ? state.stats[team] : (state.setStats[currentStatsScope][team] || {});
+        const playerJerseys = Object.keys(dataSource).map(Number).sort((a, b) => a - b);
 
         let totPts = 0;
         let totKills = 0, totAttErrors = 0, totAttBlocked = 0, totAttInPlay = 0, totAttRebounds = 0, totAttAttempts = 0;
@@ -1469,7 +1517,7 @@
         let totRecA = 0, totRecB = 0, totRecC = 0, totRecD = 0, totRecE = 0, totRecF = 0, totRecTotal = 0;
 
         playerJerseys.forEach(j => {
-          const s = state.stats[team][j];
+          const s = dataSource[j];
           const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
           const recCount = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
           const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
@@ -1517,7 +1565,7 @@
           `;
 
           playerJerseys.forEach(jersey => {
-            const s = state.stats[team][jersey];
+            const s = dataSource[jersey];
             const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
             const recCount = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
             const recBreakdown = recCount > 0 ? `${r.A||0}/${r.B||0}/${r.C||0}/${r.D||0}/${r.E||0}/${r.F||0}` : '-';
@@ -1570,7 +1618,7 @@
             </tr>
           `;
           playerJerseys.forEach(j => {
-            const s = state.stats[team][j];
+            const s = dataSource[j];
             const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
             const killPct = attTotal > 0 ? Math.round(((s.kills || 0) / attTotal) * 100) + '%' : '-';
             const eff = attTotal > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / attTotal).toFixed(3) : '-';
@@ -1617,7 +1665,7 @@
             </tr>
           `;
           playerJerseys.forEach(j => {
-            const s = state.stats[team][j];
+            const s = dataSource[j];
             const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
             const srvTot = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
             const recTot = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
@@ -1661,7 +1709,7 @@
             </tr>
           `;
           playerJerseys.forEach(j => {
-            const s = state.stats[team][j];
+            const s = dataSource[j];
             const totalBlkActions = (s.blocks || 0) + (s.blockRebounds || 0) + (s.blockTouches || 0) + (s.blockErrors || 0);
 
             const tr = document.createElement('tr');
@@ -1702,7 +1750,7 @@
             </tr>
           `;
           playerJerseys.forEach(j => {
-            const s = state.stats[team][j];
+            const s = dataSource[j];
             const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
             const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
             const srvTotal = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
@@ -1762,6 +1810,7 @@
       state.setsWon = { home: 0, away: 0 };
       state.history = [];
       state.stats = { home: {}, away: {} };
+      state.setStats = { 1: {home:{},away:{}}, 2: {home:{},away:{}}, 3: {home:{},away:{}}, 4: {home:{},away:{}}, 5: {home:{},away:{}} };
 
       [...state.rotations.home, ...state.rotations.away].forEach(num => {
         getOrCreatePlayerStats('home', num);
@@ -1777,12 +1826,17 @@
     }
 
     function downloadCSV() {
-      let csv = "Team,Player,Role,Points,Kills,AttackErrors,AttackBlocked,AttackInPlay,AttackRebounds,TotalAttacks,KillPct,HittingEff,Aces,ServeErrors,ServeInPlay,TotalServes,BlockScores,BlockRebounds,BlockTouches,BlockErrors,Rec_A,Rec_B,Rec_C,Rec_D,Rec_E,Rec_F,Total_Receives,Pos_Rec_Pct\n";
+      const scope = currentStatsScope;
+      const scopeText = scope === 'match' ? 'Whole Match' : `Set ${scope}`;
+      let csv = "Scope,Team,Player,Role,Points,Kills,AttackErrors,AttackBlocked,AttackInPlay,AttackRebounds,TotalAttacks,KillPct,HittingEff,Aces,ServeErrors,ServeInPlay,TotalServes,BlockScores,BlockRebounds,BlockTouches,BlockErrors,Rec_A,Rec_B,Rec_C,Rec_D,Rec_E,Rec_F,Total_Receives,Pos_Rec_Pct\n";
+      
       ['home', 'away'].forEach(team => {
         const teamName = state.teamNames[team];
-        const playerJerseys = Object.keys(state.stats[team]).map(Number).sort((a, b) => a - b);
+        const dataSource = scope === 'match' ? state.stats[team] : state.setStats[scope][team];
+        const playerJerseys = Object.keys(dataSource).map(Number).sort((a, b) => a - b);
+        
         playerJerseys.forEach(jersey => {
-          const s = state.stats[team][jersey];
+          const s = dataSource[jersey];
           const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
           const totalRec = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
           const posPct = totalRec > 0 ? Math.round((((r.A || 0) + (r.B || 0)) / totalRec) * 100) + '%' : '0%';
@@ -1793,7 +1847,7 @@
           const eff = totalAtt > 0 ? (((s.kills || 0) - (s.attackErrors || 0) - (s.attackBlocked || 0)) / totalAtt).toFixed(3) : '0.000';
           const totalSrv = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
 
-          csv += `"${teamName}",#${jersey},${role},${s.pts||0},${s.kills||0},${s.attackErrors||0},${s.attackBlocked||0},${s.attackInPlay||0},${s.attackRebounds||0},${totalAtt},${killPct},${eff},${s.aces||0},${s.serveErrors||0},${s.serveInPlay||0},${totalSrv},${s.blocks||0},${s.blockRebounds||0},${s.blockTouches||0},${s.blockErrors||0},${r.A||0},${r.B||0},${r.C||0},${r.D||0},${r.E||0},${r.F||0},${totalRec},${posPct}\n`;
+          csv += `"${scopeText}","${teamName}",#${jersey},${role},${s.pts||0},${s.kills||0},${s.attackErrors||0},${s.attackBlocked||0},${s.attackInPlay||0},${s.attackRebounds||0},${totalAtt},${killPct},${eff},${s.aces||0},${s.serveErrors||0},${s.serveInPlay||0},${totalSrv},${s.blocks||0},${s.blockRebounds||0},${s.blockTouches||0},${s.blockErrors||0},${r.A||0},${r.B||0},${r.C||0},${r.D||0},${r.E||0},${r.F||0},${totalRec},${posPct}\n`;
         });
       });
 
@@ -1801,11 +1855,11 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `volleyball_stats_set${state.currentSet}.csv`;
+      a.download = `volleyball_stats_${scope === 'match' ? 'match' : 'set' + scope}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      showToast("Detailed CSV Downloaded!");
+      showToast(`Detailed CSV (${scopeText}) Downloaded!`);
     }
 
     // ================= TOAST NOTIFICATION =================
