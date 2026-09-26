@@ -92,6 +92,10 @@
           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
           <span class="text-[11px]">Undo</span>
         </button>
+        <button onclick="openLineupModal()" class="touch-press px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sky-400 hover:text-sky-300 flex items-center gap-1 text-xs font-semibold" title="Teams & Jersey Numbers">
+          <i data-lucide="users" class="w-3.5 h-3.5"></i>
+          <span class="text-[11px]">Teams</span>
+        </button>
         <button onclick="openStatsModal()" class="touch-press px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:text-amber-300 flex items-center gap-1 text-xs font-semibold" title="Stats">
           <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
           <span class="text-[11px]">Stats</span>
@@ -107,10 +111,12 @@
       <!-- Home Team Card -->
       <div onclick="selectTeam('home')" id="homeTeamHeaderCard" class="touch-press relative bg-gradient-to-br from-sky-600 to-sky-700 rounded-xl p-2.5 shadow-lg border-2 border-sky-400 cursor-pointer overflow-hidden flex flex-col justify-between">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-extrabold uppercase tracking-wide text-sky-100 flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Home Team
-          </span>
-          <span class="text-[10px] font-mono bg-sky-950/40 text-sky-200 px-1.5 py-0.5 rounded font-bold" id="homeSetsWon">0 Sets</span>
+          <button onclick="event.stopPropagation(); editTeamName('home')" class="text-[11px] font-extrabold uppercase tracking-wide text-sky-100 flex items-center gap-1 hover:text-white truncate max-w-[115px] text-left" title="Tap to rename team">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+            <span id="homeTeamNameDisplay" class="truncate">Home Team</span>
+            <i data-lucide="pencil" class="w-2.5 h-2.5 opacity-75 shrink-0"></i>
+          </button>
+          <span class="text-[10px] font-mono bg-sky-950/40 text-sky-200 px-1.5 py-0.5 rounded font-bold shrink-0" id="homeSetsWon">0 Sets</span>
         </div>
         <div class="flex items-center justify-between mt-1">
           <div class="text-3xl font-mono font-extrabold text-white tracking-tight" id="homeScore">0</div>
@@ -124,10 +130,11 @@
       <!-- Away Team Card -->
       <div onclick="selectTeam('away')" id="awayTeamHeaderCard" class="touch-press relative bg-gradient-to-br from-rose-600 to-rose-700 rounded-xl p-2.5 shadow-lg border border-transparent cursor-pointer overflow-hidden flex flex-col justify-between opacity-90">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-extrabold uppercase tracking-wide text-rose-100 flex items-center gap-1">
-            Away Team
-          </span>
-          <span class="text-[10px] font-mono bg-rose-950/40 text-rose-200 px-1.5 py-0.5 rounded font-bold" id="awaySetsWon">0 Sets</span>
+          <button onclick="event.stopPropagation(); editTeamName('away')" class="text-[11px] font-extrabold uppercase tracking-wide text-rose-100 flex items-center gap-1 hover:text-white truncate max-w-[115px] text-left" title="Tap to rename team">
+            <span id="awayTeamNameDisplay" class="truncate">Away Team</span>
+            <i data-lucide="pencil" class="w-2.5 h-2.5 opacity-75 shrink-0"></i>
+          </button>
+          <span class="text-[10px] font-mono bg-rose-950/40 text-rose-200 px-1.5 py-0.5 rounded font-bold shrink-0" id="awaySetsWon">0 Sets</span>
         </div>
         <div class="flex items-center justify-between mt-1">
           <div class="text-3xl font-mono font-extrabold text-white tracking-tight" id="awayScore">0</div>
@@ -153,14 +160,20 @@
       
       <!-- LEFT COLUMN: Home Team Player 1-6 (Yellow) & Action Buttons (Blue) -->
       <div class="col-span-3 flex flex-col justify-between space-y-1">
-        <!-- Player buttons 1 to 6 (Yellow pills matching sketch) -->
-        <div class="flex flex-col space-y-1">
-          <button onclick="quickPickPlayer('home', 1)" id="homeP1" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">1</button>
-          <button onclick="quickPickPlayer('home', 2)" id="homeP2" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">2</button>
-          <button onclick="quickPickPlayer('home', 3)" id="homeP3" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">3</button>
-          <button onclick="quickPickPlayer('home', 4)" id="homeP4" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">4</button>
-          <button onclick="quickPickPlayer('home', 5)" id="homeP5" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">5</button>
-          <button onclick="quickPickPlayer('home', 6)" id="homeP6" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">6</button>
+        <div class="flex items-center justify-between pb-0.5">
+          <span class="text-[9px] font-mono text-sky-300 font-bold" id="homeSubsBadge">Subs: 0/6</span>
+          <button onclick="openSubModal('home')" class="touch-press px-1.5 py-0.5 rounded bg-sky-950/80 border border-sky-400/80 text-[10px] font-bold text-sky-200 flex items-center gap-0.5 hover:bg-sky-900 shadow">
+            <i data-lucide="arrow-left-right" class="w-3 h-3 text-sky-300"></i> Sub
+          </button>
+        </div>
+        <!-- Player buttons for Home team (Rendered dynamically based on current jersey numbers) -->
+        <div class="flex flex-col space-y-1" id="homePlayerButtonsContainer">
+          <button onclick="quickPickPlayer('home', 1)" id="homeP1" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#1</button>
+          <button onclick="quickPickPlayer('home', 2)" id="homeP2" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#2</button>
+          <button onclick="quickPickPlayer('home', 3)" id="homeP3" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#3</button>
+          <button onclick="quickPickPlayer('home', 4)" id="homeP4" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#4</button>
+          <button onclick="quickPickPlayer('home', 5)" id="homeP5" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#5</button>
+          <button onclick="quickPickPlayer('home', 6)" id="homeP6" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#6</button>
         </div>
 
         <!-- Action buttons (Blue matching sketch) -->
@@ -294,14 +307,20 @@
 
       <!-- RIGHT COLUMN: Away Team Player 1-6 (Purple) & Action Buttons (Red) -->
       <div class="col-span-3 flex flex-col justify-between space-y-1">
-        <!-- Player buttons 1 to 6 (Purple pills matching sketch) -->
-        <div class="flex flex-col space-y-1">
-          <button onclick="quickPickPlayer('away', 1)" id="awayP1" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">1</button>
-          <button onclick="quickPickPlayer('away', 2)" id="awayP2" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">2</button>
-          <button onclick="quickPickPlayer('away', 3)" id="awayP3" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">3</button>
-          <button onclick="quickPickPlayer('away', 4)" id="awayP4" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">4</button>
-          <button onclick="quickPickPlayer('away', 5)" id="awayP5" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">5</button>
-          <button onclick="quickPickPlayer('away', 6)" id="awayP6" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">6</button>
+        <div class="flex items-center justify-between pb-0.5">
+          <span class="text-[9px] font-mono text-rose-300 font-bold" id="awaySubsBadge">Subs: 0/6</span>
+          <button onclick="openSubModal('away')" class="touch-press px-1.5 py-0.5 rounded bg-rose-950/80 border border-rose-400/80 text-[10px] font-bold text-rose-200 flex items-center gap-0.5 hover:bg-rose-900 shadow">
+            <i data-lucide="arrow-left-right" class="w-3 h-3 text-rose-300"></i> Sub
+          </button>
+        </div>
+        <!-- Player buttons for Away team (Rendered dynamically based on current jersey numbers) -->
+        <div class="flex flex-col space-y-1" id="awayPlayerButtonsContainer">
+          <button onclick="quickPickPlayer('away', 1)" id="awayP1" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#1</button>
+          <button onclick="quickPickPlayer('away', 2)" id="awayP2" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#2</button>
+          <button onclick="quickPickPlayer('away', 3)" id="awayP3" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#3</button>
+          <button onclick="quickPickPlayer('away', 4)" id="awayP4" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#4</button>
+          <button onclick="quickPickPlayer('away', 5)" id="awayP5" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#5</button>
+          <button onclick="quickPickPlayer('away', 6)" id="awayP6" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#6</button>
         </div>
 
         <!-- Action buttons (Red matching sketch) -->
@@ -329,7 +348,7 @@
       </div>
 
       <div class="overflow-y-auto flex-1 my-3 pr-1 hide-scrollbar">
-        <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-1.5">Home Team Stats</h4>
+        <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-1.5" id="statsHomeTeamHeader">Home Team Stats</h4>
         <table class="w-full text-left text-[11px] text-slate-300 font-mono mb-4">
           <thead class="bg-slate-950 text-slate-400">
             <tr>
@@ -344,7 +363,7 @@
           <tbody id="homeStatsTableBody" class="divide-y divide-slate-800"></tbody>
         </table>
 
-        <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-1.5">Away Team Stats</h4>
+        <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-1.5" id="statsAwayTeamHeader">Away Team Stats</h4>
         <table class="w-full text-left text-[11px] text-slate-300 font-mono">
           <thead class="bg-slate-950 text-slate-400">
             <tr>
@@ -378,9 +397,115 @@
     </div>
   </div>
 
+  <div id="subModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm p-3 flex items-center justify-center">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
+          <i data-lucide="arrow-left-right" class="w-4 h-4 text-amber-400"></i>
+          <span id="subModalTitle">Substitution (Home Team)</span>
+        </h3>
+        <button onclick="closeSubModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Outgoing Player Select -->
+      <div>
+        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Player Coming OFF (Court):</label>
+        <div id="subOutPlayerList" class="grid grid-cols-3 gap-1.5"></div>
+      </div>
+
+      <!-- Incoming Player Jersey Input -->
+      <div>
+        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Player Coming ON (Jersey #):</label>
+        <div class="flex items-center space-x-2">
+          <input type="number" id="subInJerseyInput" min="1" max="99" placeholder="e.g. 14" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono font-bold text-base focus:border-amber-400 focus:outline-none text-center">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+        <button onclick="closeSubModal()" class="touch-press px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
+        <button onclick="executeSubstitution()" class="touch-press px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i> Confirm Sub
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lineupModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm p-3 flex items-center justify-center">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-4 shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
+          <i data-lucide="users" class="w-4 h-4 text-sky-400"></i> Teams & Starting Lineup
+        </h3>
+        <button onclick="closeLineupModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto flex-1 my-3 pr-1 space-y-3.5 hide-scrollbar">
+        <!-- Home Team Settings -->
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-sky-900/60">
+          <div class="flex items-center justify-between mb-2 gap-2">
+            <span class="text-xs font-bold text-sky-400 uppercase tracking-wide">Home Team Name:</span>
+            <input type="text" id="lineup_home_name" maxlength="20" placeholder="Home Team" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:border-sky-400 focus:outline-none w-36">
+          </div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Starting 6 Jerseys (Positions P1–P6)</span>
+          <div class="grid grid-cols-6 gap-1.5" id="homeLineupInputs"></div>
+        </div>
+
+        <!-- Away Team Settings -->
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-rose-900/60">
+          <div class="flex items-center justify-between mb-2 gap-2">
+            <span class="text-xs font-bold text-rose-400 uppercase tracking-wide">Away Team Name:</span>
+            <input type="text" id="lineup_away_name" maxlength="20" placeholder="Away Team" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:border-rose-400 focus:outline-none w-36">
+          </div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Starting 6 Jerseys (Positions P1–P6)</span>
+          <div class="grid grid-cols-6 gap-1.5" id="awayLineupInputs"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+        <button onclick="closeLineupModal()" class="touch-press px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
+        <button onclick="saveLineupSetup()" class="touch-press px-4 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center gap-1">
+          <i data-lucide="save" class="w-3.5 h-3.5"></i> Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dedicated Quick Rename Team Modal -->
+  <div id="teamNameModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm p-3 flex items-center justify-center">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xs p-4 shadow-2xl flex flex-col space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
+          <i data-lucide="edit-3" class="w-4 h-4 text-amber-400"></i>
+          <span id="teamNameModalTitle">Rename Team</span>
+        </h3>
+        <button onclick="closeTeamNameModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Enter Team Name:</label>
+        <input type="text" id="teamNameModalInput" maxlength="20" placeholder="e.g. Karasuno" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold text-sm focus:border-amber-400 focus:outline-none">
+      </div>
+      <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+        <button onclick="closeTeamNameModal()" class="touch-press px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
+        <button onclick="saveSingleTeamName()" class="touch-press px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i> Save Name
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // State management
     const state = {
+      teamNames: {
+        home: 'Home Team',
+        away: 'Away Team'
+      },
       currentSet: 1,
       activeTeam: 'home', // 'home' | 'away'
       activePlayer: 1,    // 1 to 6
@@ -398,7 +523,11 @@
         home: [1, 6, 5, 4, 3, 2],
         away: [1, 6, 5, 4, 3, 2]
       },
-      // Player stats map
+      substitutions: {
+        home: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+        away: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+      },
+      // Player stats map (keyed dynamically by jersey number)
       stats: {
         home: {},
         away: {}
@@ -407,11 +536,19 @@
       history: []
     };
 
-    // Initialize stats containers for players 1 to 6
-    for (let i = 1; i <= 6; i++) {
-      state.stats.home[i] = { pts: 0, kills: 0, attackErrors: 0, aces: 0, serveErrors: 0, blocks: 0, passes: 0, passSum: 0 };
-      state.stats.away[i] = { pts: 0, kills: 0, attackErrors: 0, aces: 0, serveErrors: 0, blocks: 0, passes: 0, passSum: 0 };
+    // Helper to ensure a player stats record exists
+    function getOrCreatePlayerStats(team, jersey) {
+      if (!state.stats[team][jersey]) {
+        state.stats[team][jersey] = { pts: 0, kills: 0, attackErrors: 0, aces: 0, serveErrors: 0, blocks: 0, passes: 0, passSum: 0 };
+      }
+      return state.stats[team][jersey];
     }
+
+    // Initialize stats containers for starting players
+    [1, 2, 3, 4, 5, 6].forEach(num => {
+      getOrCreatePlayerStats('home', num);
+      getOrCreatePlayerStats('away', num);
+    });
 
     // Outcomes configuration for the center bottom outcome area
     const skillOutcomes = {
@@ -445,9 +582,10 @@
       renderOutcomes();
     }
 
-    function quickPickPlayer(team, playerNum) {
+    function quickPickPlayer(team, jerseyNum) {
       state.activeTeam = team;
-      state.activePlayer = playerNum;
+      state.activePlayer = jerseyNum;
+      getOrCreatePlayerStats(team, jerseyNum);
       updateHeaderSelectionUI();
       renderOutcomes();
     }
@@ -463,6 +601,41 @@
       state.activeSkill = skillName;
       updateHeaderSelectionUI();
       renderOutcomes();
+    }
+
+    function renderPlayerSideButtons() {
+      // Home player buttons
+      const homeContainer = document.getElementById('homePlayerButtonsContainer');
+      homeContainer.innerHTML = '';
+      const homeJerseys = [...new Set(state.rotations.home)];
+      homeJerseys.forEach(jersey => {
+        const btn = document.createElement('button');
+        btn.id = `homeP${jersey}`;
+        btn.onclick = () => quickPickPlayer('home', jersey);
+        btn.className = `touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent`;
+        btn.textContent = `#${jersey}`;
+        homeContainer.appendChild(btn);
+      });
+
+      // Away player buttons
+      const awayContainer = document.getElementById('awayPlayerButtonsContainer');
+      awayContainer.innerHTML = '';
+      const awayJerseys = [...new Set(state.rotations.away)];
+      awayJerseys.forEach(jersey => {
+        const btn = document.createElement('button');
+        btn.id = `awayP${jersey}`;
+        btn.onclick = () => quickPickPlayer('away', jersey);
+        btn.className = `touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent`;
+        btn.textContent = `#${jersey}`;
+        awayContainer.appendChild(btn);
+      });
+
+      // Update substitution badges for current set
+      const curSet = state.currentSet;
+      const hSubs = state.substitutions.home[curSet] || 0;
+      const aSubs = state.substitutions.away[curSet] || 0;
+      document.getElementById('homeSubsBadge').textContent = `Subs: ${hSubs}/6`;
+      document.getElementById('awaySubsBadge').textContent = `Subs: ${aSubs}/6`;
     }
 
     function updateHeaderSelectionUI() {
@@ -482,20 +655,25 @@
       }
 
       // Player side buttons highlight
-      for (let i = 1; i <= 6; i++) {
-        const hBtn = document.getElementById(`homeP${i}`);
-        const aBtn = document.getElementById(`awayP${i}`);
-        if (state.activeTeam === 'home' && state.activePlayer === i) {
-          hBtn.classList.add('ring-2', 'ring-white', 'scale-105');
+      const allHomeBtns = document.querySelectorAll('#homePlayerButtonsContainer button');
+      allHomeBtns.forEach(btn => {
+        const j = parseInt(btn.textContent.replace('#', ''));
+        if (state.activeTeam === 'home' && state.activePlayer === j) {
+          btn.classList.add('ring-2', 'ring-white', 'scale-105');
         } else {
-          hBtn.classList.remove('ring-2', 'ring-white', 'scale-105');
+          btn.classList.remove('ring-2', 'ring-white', 'scale-105');
         }
-        if (state.activeTeam === 'away' && state.activePlayer === i) {
-          aBtn.classList.add('ring-2', 'ring-white', 'scale-105');
+      });
+
+      const allAwayBtns = document.querySelectorAll('#awayPlayerButtonsContainer button');
+      allAwayBtns.forEach(btn => {
+        const j = parseInt(btn.textContent.replace('#', ''));
+        if (state.activeTeam === 'away' && state.activePlayer === j) {
+          btn.classList.add('ring-2', 'ring-white', 'scale-105');
         } else {
-          aBtn.classList.remove('ring-2', 'ring-white', 'scale-105');
+          btn.classList.remove('ring-2', 'ring-white', 'scale-105');
         }
-      }
+      });
 
       // Skill buttons highlight
       const skills = ['Serve', 'Attack', 'Block', 'Opposite Error'];
@@ -520,9 +698,45 @@
       });
 
       // Update text banner
-      const teamLabel = state.activeTeam === 'home' ? 'Home' : 'Away';
-      document.getElementById('activeSelectionLabel').textContent = `${teamLabel} Team • #${state.activePlayer} • ${state.activeSkill}`;
+      const teamLabel = state.teamNames[state.activeTeam] || (state.activeTeam === 'home' ? 'Home' : 'Away');
+      document.getElementById('activeSelectionLabel').textContent = `${teamLabel} • #${state.activePlayer} • ${state.activeSkill}`;
       document.getElementById('activeSkillBadge').textContent = state.activeSkill;
+    }
+
+    function renderTeamNames() {
+      const hDisplay = document.getElementById('homeTeamNameDisplay');
+      const aDisplay = document.getElementById('awayTeamNameDisplay');
+      if (hDisplay) hDisplay.textContent = state.teamNames.home;
+      if (aDisplay) aDisplay.textContent = state.teamNames.away;
+      lucide.createIcons();
+    }
+
+    let teamBeingEdited = 'home';
+    function editTeamName(team) {
+      teamBeingEdited = team;
+      const title = document.getElementById('teamNameModalTitle');
+      const input = document.getElementById('teamNameModalInput');
+      title.textContent = `Rename ${team === 'home' ? 'Home' : 'Away'} Team`;
+      input.value = state.teamNames[team] || '';
+      document.getElementById('teamNameModal').classList.remove('hidden');
+      setTimeout(() => input.focus(), 50);
+      lucide.createIcons();
+    }
+
+    function closeTeamNameModal() {
+      document.getElementById('teamNameModal').classList.add('hidden');
+    }
+
+    function saveSingleTeamName() {
+      const val = document.getElementById('teamNameModalInput').value.trim();
+      if (val) {
+        state.teamNames[teamBeingEdited] = val;
+        renderTeamNames();
+        updateHeaderSelectionUI();
+        showToast(`Renamed to "${val}"`);
+        saveToLocalStorage();
+      }
+      closeTeamNameModal();
     }
 
     function renderOutcomes() {
@@ -546,7 +760,8 @@
       const last = rot.pop();
       rot.unshift(last);
       updateCourtDisplay();
-      showToast(`${team === 'home' ? 'Home' : 'Away'} Team Rotated!`);
+      const teamName = state.teamNames[team] || (team === 'home' ? 'Home' : 'Away');
+      showToast(`${teamName} Rotated!`);
     }
 
     function updateCourtDisplay() {
@@ -574,7 +789,7 @@
       const prevScore = { home: currentSetData.home, away: currentSetData.away };
       const team = state.activeTeam;
       const playerNum = state.activePlayer;
-      const playerStats = state.stats[team][playerNum];
+      const playerStats = getOrCreatePlayerStats(team, playerNum);
 
       let pointAwarded = null;
 
@@ -609,7 +824,8 @@
       });
 
       updateScoreDisplay();
-      showToast(`${team.toUpperCase()} #${playerNum}: ${outcomeItem.label}`);
+      const teamName = state.teamNames[team] || team.toUpperCase();
+      showToast(`${teamName} #${playerNum}: ${outcomeItem.label}`);
       saveToLocalStorage();
     }
 
@@ -618,9 +834,43 @@
       const playerNum = state.activePlayer;
       const currentSetData = state.sets[state.currentSet];
       const prevScore = { home: currentSetData.home, away: currentSetData.away };
+      const playerStats = getOrCreatePlayerStats(team, playerNum);
 
-      state.stats[team][playerNum].passes++;
-      state.stats[team][playerNum].passSum += rating;
+      playerStats.passes++;
+      playerStats.passSum += rating;
+
+      let pointAwarded = null;
+      if (rating === 0) { // Reception Error -> Opponent point
+        const oppTeam = team === 'home' ? 'away' : 'home';
+        currentSetData[oppTeam] += 1;
+        pointAwarded = oppTeam;
+      }
+
+      state.history.push({
+        type: 'pass',
+        set: state.currentSet,
+        team: team,
+        player: playerNum,
+        rating: rating,
+        pointAwarded: pointAwarded,
+        prevScore: prevScore
+      });
+
+      updateScoreDisplay();
+      const teamName = state.teamNames[team] || team.toUpperCase();
+      showToast(`${teamName} #${playerNum} Pass: #${rating}`);
+      saveToLocalStorage();
+    }
+
+    function recordPass(rating) {
+      const team = state.activeTeam;
+      const playerNum = state.activePlayer;
+      const currentSetData = state.sets[state.currentSet];
+      const prevScore = { home: currentSetData.home, away: currentSetData.away };
+      const playerStats = getOrCreatePlayerStats(team, playerNum);
+
+      playerStats.passes++;
+      playerStats.passSum += rating;
 
       let pointAwarded = null;
       if (rating === 0) { // Reception Error -> Opponent point
@@ -692,6 +942,7 @@
           btn.className = "px-2 py-0.5 text-xs font-mono font-medium rounded text-slate-400";
         }
       }
+      renderPlayerSideButtons();
       updateScoreDisplay();
       showToast(`Switched to Set ${num}`);
     }
@@ -702,6 +953,20 @@
         return;
       }
       const last = state.history.pop();
+
+      // Undo Substitution
+      if (last.type === 'sub') {
+        state.rotations[last.team][last.positionIndex] = last.outJersey;
+        state.substitutions[last.team][last.set] = Math.max(0, (state.substitutions[last.team][last.set] || 1) - 1);
+        state.activePlayer = last.outJersey;
+        updateCourtDisplay();
+        renderPlayerSideButtons();
+        updateHeaderSelectionUI();
+        showToast(`Undid Sub: #${last.outJersey} back on court`);
+        saveToLocalStorage();
+        return;
+      }
+
       const curSet = state.sets[last.set];
 
       // Restore score
@@ -712,7 +977,7 @@
 
       // Revert stat counters
       if (last.type === 'action') {
-        const ps = state.stats[last.team][last.player];
+        const ps = getOrCreatePlayerStats(last.team, last.player);
         if (last.pointAwarded === last.team) ps.pts = Math.max(0, ps.pts - 1);
         if (last.outcome === 'ace') ps.aces = Math.max(0, ps.aces - 1);
         if (last.outcome === 'kill') ps.kills = Math.max(0, ps.kills - 1);
@@ -720,7 +985,7 @@
         if (last.outcome === 'error' && last.skill === 'Serve') ps.serveErrors = Math.max(0, ps.serveErrors - 1);
         if (last.outcome === 'error' && last.skill === 'Attack') ps.attackErrors = Math.max(0, ps.attackErrors - 1);
       } else if (last.type === 'pass') {
-        const ps = state.stats[last.team][last.player];
+        const ps = getOrCreatePlayerStats(last.team, last.player);
         ps.passes = Math.max(0, ps.passes - 1);
         ps.passSum = Math.max(0, ps.passSum - last.rating);
       }
@@ -734,12 +999,179 @@
       document.getElementById('lastStatToast').textContent = msg;
     }
 
+    let currentSubTeam = 'home';
+    let selectedSubOutJersey = null;
+    let selectedSubOutIndex = null;
+
+    function openSubModal(team) {
+      currentSubTeam = team;
+      const teamName = state.teamNames[team] || (team === 'home' ? 'Home' : 'Away');
+      document.getElementById('subModalTitle').textContent = `Substitution (${teamName})`;
+      const listContainer = document.getElementById('subOutPlayerList');
+      listContainer.innerHTML = '';
+      selectedSubOutJersey = null;
+      selectedSubOutIndex = null;
+      document.getElementById('subInJerseyInput').value = '';
+
+      // Positions standard: [P1, P6, P5, P4, P3, P2]
+      const posNames = ['P1 (Serve)', 'P6 (Mid Back)', 'P5 (Left Back)', 'P4 (Left Front)', 'P3 (Mid Front)', 'P2 (Right Front)'];
+      state.rotations[team].forEach((jersey, index) => {
+        const btn = document.createElement('button');
+        btn.className = "p-2 rounded-lg bg-slate-800 border border-slate-700 text-left hover:border-amber-400 touch-press transition";
+        btn.innerHTML = `
+          <div class="text-xs font-mono font-bold ${team === 'home' ? 'text-amber-400' : 'text-purple-300'}">#${jersey}</div>
+          <div class="text-[9px] text-slate-400 truncate">${posNames[index]}</div>
+        `;
+        btn.onclick = () => {
+          listContainer.querySelectorAll('button').forEach(b => b.classList.remove('ring-2', 'ring-amber-400', 'bg-slate-700'));
+          btn.classList.add('ring-2', 'ring-amber-400', 'bg-slate-700');
+          selectedSubOutJersey = jersey;
+          selectedSubOutIndex = index;
+        };
+        listContainer.appendChild(btn);
+      });
+
+      // Default select the first player
+      if (listContainer.firstElementChild) {
+        listContainer.firstElementChild.click();
+      }
+
+      document.getElementById('subModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeSubModal() {
+      document.getElementById('subModal').classList.add('hidden');
+    }
+
+    function executeSubstitution() {
+      const inJerseyVal = parseInt(document.getElementById('subInJerseyInput').value.trim());
+      if (!inJerseyVal || inJerseyVal < 1 || inJerseyVal > 99) {
+        showToast("Please enter a valid Jersey # (1-99)");
+        return;
+      }
+      if (selectedSubOutJersey === null || selectedSubOutIndex === null) {
+        showToast("Please select a player to sub out");
+        return;
+      }
+
+      const team = currentSubTeam;
+      const curSet = state.currentSet;
+
+      // Increment substitutions for current set
+      state.substitutions[team][curSet] = (state.substitutions[team][curSet] || 0) + 1;
+
+      // Update court rotation array
+      state.rotations[team][selectedSubOutIndex] = inJerseyVal;
+
+      // Ensure stats entry exists
+      getOrCreatePlayerStats(team, inJerseyVal);
+
+      // Record in undo history
+      state.history.push({
+        type: 'sub',
+        set: curSet,
+        team: team,
+        positionIndex: selectedSubOutIndex,
+        outJersey: selectedSubOutJersey,
+        inJersey: inJerseyVal
+      });
+
+      // Set as currently active player
+      state.activeTeam = team;
+      state.activePlayer = inJerseyVal;
+
+      updateCourtDisplay();
+      renderPlayerSideButtons();
+      updateHeaderSelectionUI();
+      closeSubModal();
+      showToast(`Sub: #${inJerseyVal} IN for #${selectedSubOutJersey} OUT`);
+      saveToLocalStorage();
+    }
+
+    function openLineupModal() {
+      const homeInputs = document.getElementById('homeLineupInputs');
+      const awayInputs = document.getElementById('awayLineupInputs');
+      homeInputs.innerHTML = '';
+      awayInputs.innerHTML = '';
+
+      // Prefill team names
+      document.getElementById('lineup_home_name').value = state.teamNames.home || 'Home Team';
+      document.getElementById('lineup_away_name').value = state.teamNames.away || 'Away Team';
+
+      const posLabels = ['P1', 'P6', 'P5', 'P4', 'P3', 'P2'];
+      // Home
+      state.rotations.home.forEach((jersey, idx) => {
+        const div = document.createElement('div');
+        div.className = "flex flex-col items-center";
+        div.innerHTML = `
+          <span class="text-[9px] font-mono text-slate-400 mb-0.5">${posLabels[idx]}</span>
+          <input type="number" id="lineup_home_${idx}" value="${jersey}" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-amber-300 text-xs focus:border-amber-400 focus:outline-none">
+        `;
+        homeInputs.appendChild(div);
+      });
+
+      // Away
+      state.rotations.away.forEach((jersey, idx) => {
+        const div = document.createElement('div');
+        div.className = "flex flex-col items-center";
+        div.innerHTML = `
+          <span class="text-[9px] font-mono text-slate-400 mb-0.5">${posLabels[idx]}</span>
+          <input type="number" id="lineup_away_${idx}" value="${jersey}" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-rose-300 text-xs focus:border-rose-400 focus:outline-none">
+        `;
+        awayInputs.appendChild(div);
+      });
+
+      document.getElementById('lineupModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeLineupModal() {
+      document.getElementById('lineupModal').classList.add('hidden');
+    }
+
+    function saveLineupSetup() {
+      // Save team names if provided
+      const hName = document.getElementById('lineup_home_name').value.trim();
+      const aName = document.getElementById('lineup_away_name').value.trim();
+      if (hName) state.teamNames.home = hName;
+      if (aName) state.teamNames.away = aName;
+
+      // Collect Home numbers
+      for (let i = 0; i < 6; i++) {
+        const val = parseInt(document.getElementById(`lineup_home_${i}`).value);
+        if (val && val > 0) {
+          state.rotations.home[i] = val;
+          getOrCreatePlayerStats('home', val);
+        }
+      }
+      // Collect Away numbers
+      for (let i = 0; i < 6; i++) {
+        const val = parseInt(document.getElementById(`lineup_away_${i}`).value);
+        if (val && val > 0) {
+          state.rotations.away[i] = val;
+          getOrCreatePlayerStats('away', val);
+        }
+      }
+
+      state.activePlayer = state.rotations[state.activeTeam][0] || 1;
+      renderTeamNames();
+      updateCourtDisplay();
+      renderPlayerSideButtons();
+      updateHeaderSelectionUI();
+      closeLineupModal();
+      showToast("Teams and starting lineups updated!");
+      saveToLocalStorage();
+    }
+
     function saveToLocalStorage() {
       try {
         localStorage.setItem('vb_tracker_state', JSON.stringify({
+          teamNames: state.teamNames,
           sets: state.sets,
           stats: state.stats,
-          rotations: state.rotations
+          rotations: state.rotations,
+          substitutions: state.substitutions
         }));
       } catch (e) {
         console.error("Storage error", e);
@@ -751,9 +1183,11 @@
         const saved = localStorage.getItem('vb_tracker_state');
         if (saved) {
           const parsed = JSON.parse(saved);
+          if (parsed.teamNames) state.teamNames = parsed.teamNames;
           if (parsed.sets) state.sets = parsed.sets;
           if (parsed.stats) state.stats = parsed.stats;
           if (parsed.rotations) state.rotations = parsed.rotations;
+          if (parsed.substitutions) state.substitutions = parsed.substitutions;
         }
       } catch (e) {
         console.error("Failed to load state", e);
@@ -761,6 +1195,8 @@
     }
 
     function openStatsModal() {
+      document.getElementById('statsHomeTeamHeader').textContent = `${state.teamNames.home} Stats`;
+      document.getElementById('statsAwayTeamHeader').textContent = `${state.teamNames.away} Stats`;
       renderStatsTable('home', 'homeStatsTableBody');
       renderStatsTable('away', 'awayStatsTableBody');
       cancelResetPrompt();
@@ -776,13 +1212,15 @@
     function renderStatsTable(team, elementId) {
       const tbody = document.getElementById(elementId);
       tbody.innerHTML = '';
-      for (let i = 1; i <= 6; i++) {
-        const s = state.stats[team][i];
+      const playerJerseys = Object.keys(state.stats[team]).map(Number).sort((a, b) => a - b);
+      
+      playerJerseys.forEach(jersey => {
+        const s = state.stats[team][jersey];
         const passAvg = s.passes > 0 ? (s.passSum / s.passes).toFixed(2) : '-';
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-800/50";
         tr.innerHTML = `
-          <td class="p-1 font-bold ${team === 'home' ? 'text-amber-400' : 'text-purple-300'}">#${i}</td>
+          <td class="p-1 font-bold ${team === 'home' ? 'text-amber-400' : 'text-purple-300'}">#${jersey}</td>
           <td class="p-1 text-center font-bold text-white">${s.pts}</td>
           <td class="p-1 text-center">${s.kills}</td>
           <td class="p-1 text-center">${s.aces}</td>
@@ -790,7 +1228,7 @@
           <td class="p-1 text-center text-slate-400">${passAvg}</td>
         `;
         tbody.appendChild(tr);
-      }
+      });
     }
 
     function confirmResetAll() {
@@ -819,11 +1257,13 @@
     function downloadCSV() {
       let csv = "Team,Player,Points,Kills,AttackErrors,Aces,ServeErrors,Blocks,PassAttempts,PassAvg\n";
       ['home', 'away'].forEach(team => {
-        for (let i = 1; i <= 6; i++) {
-          const s = state.stats[team][i];
+        const teamName = state.teamNames[team] || team.toUpperCase();
+        const playerJerseys = Object.keys(state.stats[team]).map(Number).sort((a, b) => a - b);
+        playerJerseys.forEach(jersey => {
+          const s = state.stats[team][jersey];
           const passAvg = s.passes > 0 ? (s.passSum / s.passes).toFixed(2) : '0';
-          csv += `${team.toUpperCase()},#${i},${s.pts},${s.kills},${s.attackErrors},${s.aces},${s.serveErrors},${s.blocks},${s.passes},${passAvg}\n`;
-        }
+          csv += `"${teamName}",#${jersey},${s.pts},${s.kills},${s.attackErrors},${s.aces},${s.serveErrors},${s.blocks},${s.passes},${passAvg}\n`;
+        });
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -838,8 +1278,10 @@
 
     window.onload = function() {
       loadFromLocalStorage();
+      renderTeamNames();
       lucide.createIcons();
       updateCourtDisplay();
+      renderPlayerSideButtons();
       updateScoreDisplay();
       updateHeaderSelectionUI();
       renderOutcomes();
