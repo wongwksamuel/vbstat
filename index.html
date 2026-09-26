@@ -164,6 +164,19 @@
               <button onclick="adjustScore('home', -1)" class="touch-press w-7 h-7 rounded-lg bg-[#0e3352] border border-cyan-700/80 text-cyan-200 font-black text-sm flex items-center justify-center shadow">−</button>
             </div>
           </div>
+          
+          <!-- Sub & Lib row -->
+          <div class="flex items-center justify-between pt-1.5 mt-1 border-t border-cyan-800/60">
+            <span id="homeSubIndicator" class="text-[9px] font-bold font-mono text-cyan-400">Subs: 0/6</span>
+            <div class="flex items-center gap-1">
+              <button onclick="openLiberoModal('home')" class="touch-press px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-500/80 rounded-md text-[9px] font-bold text-emerald-300 flex items-center gap-0.5 shadow-sm">
+                🛡️ Lib
+              </button>
+              <button onclick="openSubModal('home')" class="touch-press px-1.5 py-0.5 bg-cyan-950/80 border border-cyan-600/80 rounded-md text-[9px] font-bold text-cyan-300 flex items-center gap-0.5 shadow-sm">
+                ⇄ Sub
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- AWAY TEAM CARD -->
@@ -185,6 +198,19 @@
               <button onclick="adjustScore('away', -1)" class="touch-press w-7 h-7 rounded-lg bg-[#3b0d1a] border border-rose-700/80 text-rose-200 font-black text-sm flex items-center justify-center shadow">−</button>
             </div>
           </div>
+
+          <!-- Sub & Lib row -->
+          <div class="flex items-center justify-between pt-1.5 mt-1 border-t border-rose-800/60">
+            <span id="awaySubIndicator" class="text-[9px] font-bold font-mono text-rose-400">Subs: 0/6</span>
+            <div class="flex items-center gap-1">
+              <button onclick="openLiberoModal('away')" class="touch-press px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-500/80 rounded-md text-[9px] font-bold text-emerald-300 flex items-center gap-0.5 shadow-sm">
+                🛡️ Lib
+              </button>
+              <button onclick="openSubModal('away')" class="touch-press px-1.5 py-0.5 bg-rose-950/80 border border-rose-600/80 rounded-md text-[9px] font-bold text-rose-300 flex items-center gap-0.5 shadow-sm">
+                ⇄ Sub
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -203,30 +229,9 @@
     </div>
   </header>
 
-  <!-- ================= MIDDLE SECTION: COURT & PADS ================= -->
-  <section class="shrink-0 w-full px-0.5 py-0 flex items-center justify-between gap-1.5">
+  <!-- ================= MIDDLE SECTION: COURT ONLY ================= -->
+  <section class="shrink-0 w-full px-0.5 py-0 flex items-center justify-center gap-1.5">
     
-    <!-- LEFT COLUMN: HOME TEAM SLOTS (P1 to P6) -->
-    <div class="w-[96px] flex flex-col shrink-0 gap-1.5">
-      <!-- Sub & Lib row -->
-      <div class="flex items-center justify-between gap-1 pb-0.5">
-        <span id="homeSubIndicator" class="text-[9px] font-bold font-mono text-cyan-400">Subs: 0/6</span>
-        <div class="flex items-center gap-1">
-          <button onclick="openLiberoModal('home')" class="touch-press px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-500/80 rounded-md text-[9px] font-bold text-emerald-300 flex items-center gap-0.5">
-            🛡️ Lib
-          </button>
-          <button onclick="openSubModal('home')" class="touch-press px-1.5 py-0.5 bg-cyan-950/80 border border-cyan-600/80 rounded-md text-[9px] font-bold text-cyan-300 flex items-center gap-0.5">
-            ⇄ Sub
-          </button>
-        </div>
-      </div>
-
-      <!-- 6 Golden Player Slot Cards -->
-      <div class="flex flex-col gap-1.5" id="homePlayerPad">
-        <!-- Rendered dynamically by updatePlayerPads() -->
-      </div>
-    </div>
-
     <!-- MIDDLE COLUMN: 2:1 COURT -->
     <div class="flex-1 flex flex-col items-center justify-center shrink-0">
       
@@ -326,27 +331,6 @@
 
       </div>
 
-    </div>
-
-    <!-- RIGHT COLUMN: AWAY TEAM SLOTS (P1 to P6) -->
-    <div class="w-[96px] flex flex-col shrink-0 gap-1.5">
-      <!-- Sub & Lib row -->
-      <div class="flex items-center justify-between gap-1 pb-0.5">
-        <span id="awaySubIndicator" class="text-[9px] font-bold font-mono text-rose-400">Subs: 0/6</span>
-        <div class="flex items-center gap-1">
-          <button onclick="openLiberoModal('away')" class="touch-press px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-500/80 rounded-md text-[9px] font-bold text-emerald-300 flex items-center gap-0.5">
-            🛡️ Lib
-          </button>
-          <button onclick="openSubModal('away')" class="touch-press px-1.5 py-0.5 bg-rose-950/80 border border-rose-600/80 rounded-md text-[9px] font-bold text-rose-300 flex items-center gap-0.5">
-            ⇄ Sub
-          </button>
-        </div>
-      </div>
-
-      <!-- 6 Lavender Player Slot Cards -->
-      <div class="flex flex-col gap-1.5" id="awayPlayerPad">
-        <!-- Rendered dynamically by updatePlayerPads() -->
-      </div>
     </div>
 
   </section>
@@ -1104,40 +1088,6 @@
           }
         });
       });
-
-      // 2. Update Side Number Pads (Exact Screenshot Layout: P1  #21)
-      ['home', 'away'].forEach(team => {
-        const pad = document.getElementById(`${team}PlayerPad`);
-        pad.innerHTML = '';
-        const rot = state.rotations[team];
-
-        INDEX_TO_POS.forEach((posNum, idx) => {
-          const jersey = rot[idx];
-          const isSelected = (state.activeTeam === team && state.activePlayer === jersey);
-          const isLib = isLibero(team, jersey);
-
-          const btn = document.createElement('button');
-          btn.onclick = () => selectPlayer(team, jersey);
-
-          let bgClasses = "";
-          if (team === 'home') {
-            bgClasses = "bg-[#f59e0b] hover:bg-[#fbbf24] text-slate-950";
-          } else {
-            bgClasses = "bg-[#d8b4fe] hover:bg-[#e9d5ff] text-[#581c87]";
-          }
-
-          if (isLib) {
-            bgClasses = "bg-emerald-500 text-white";
-          }
-
-          btn.className = `touch-press player-slot-btn w-full h-[50px] px-2.5 rounded-xl flex items-center justify-between font-mono shadow-md ${bgClasses} ${isSelected ? 'active-slot ring-2 ring-white scale-102' : ''}`;
-          btn.innerHTML = `
-            <span class="text-[11px] font-black opacity-80">P${posNum}</span>
-            <span class="text-base font-black tracking-tight font-sans">#${jersey}${isLib ? 'L' : ''}</span>
-          `;
-          pad.appendChild(btn);
-        });
-      });
     }
 
     // ================= SUBSTITUTION LOGIC =================
@@ -1516,7 +1466,20 @@
         let totBlocks = 0, totBlockRebounds = 0, totBlockTouches = 0, totBlockErrors = 0;
         let totRecA = 0, totRecB = 0, totRecC = 0, totRecD = 0, totRecE = 0, totRecF = 0, totRecTotal = 0;
 
-        playerJerseys.forEach(j => {
+        // Filter players who actually have statistics
+        const activeJerseys = playerJerseys.filter(j => {
+          const s = dataSource[j];
+          if (!s) return false;
+          const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
+          const recCount = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
+          const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
+          const srvTotal = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
+          const blkTotal = (s.blocks || 0) + (s.blockRebounds || 0) + (s.blockTouches || 0) + (s.blockErrors || 0);
+          
+          return (s.pts > 0 || recCount > 0 || attTotal > 0 || srvTotal > 0 || blkTotal > 0);
+        });
+
+        activeJerseys.forEach(j => {
           const s = dataSource[j];
           const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
           const recCount = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
@@ -1564,7 +1527,7 @@
             </tr>
           `;
 
-          playerJerseys.forEach(jersey => {
+          activeJerseys.forEach(jersey => {
             const s = dataSource[jersey];
             const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
             const recCount = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
@@ -1617,7 +1580,7 @@
               <th class="p-1 text-center text-cyan-300">Eff%</th>
             </tr>
           `;
-          playerJerseys.forEach(j => {
+          activeJerseys.forEach(j => {
             const s = dataSource[j];
             const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
             const killPct = attTotal > 0 ? Math.round(((s.kills || 0) / attTotal) * 100) + '%' : '-';
@@ -1664,7 +1627,7 @@
               <th class="p-1 text-center text-emerald-400">Pos%</th>
             </tr>
           `;
-          playerJerseys.forEach(j => {
+          activeJerseys.forEach(j => {
             const s = dataSource[j];
             const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
             const srvTot = (s.aces || 0) + (s.serveErrors || 0) + (s.serveInPlay || 0);
@@ -1708,7 +1671,7 @@
               <th class="p-1 text-center text-cyan-300">Total Actions</th>
             </tr>
           `;
-          playerJerseys.forEach(j => {
+          activeJerseys.forEach(j => {
             const s = dataSource[j];
             const totalBlkActions = (s.blocks || 0) + (s.blockRebounds || 0) + (s.blockTouches || 0) + (s.blockErrors || 0);
 
@@ -1749,7 +1712,7 @@
               <th class="p-1 text-center text-emerald-400">Pos%</th>
             </tr>
           `;
-          playerJerseys.forEach(j => {
+          activeJerseys.forEach(j => {
             const s = dataSource[j];
             const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
             const attTotal = (s.kills || 0) + (s.attackErrors || 0) + (s.attackBlocked || 0) + (s.attackInPlay || 0) + (s.attackRebounds || 0);
