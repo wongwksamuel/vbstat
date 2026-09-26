@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Volleyball Portrait Tracker</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            home: {
+              DEFAULT: '#0284c7', // Sky 600
+              light: '#38bdf8',
+              dark: '#0369a1',
+              pill: '#facc15',   // Yellow from sketch
+              pillText: '#713f12'
+            },
+            away: {
+              DEFAULT: '#f43f5e', // Rose 500
+              light: '#fb7185',
+              dark: '#be123c',
+              pill: '#c084fc',   // Purple from sketch
+              pillText: '#3b0764'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      box-sizing: border-box;
+    }
+    body {
+      touch-action: manipulation;
+    }
+    .touch-press {
+      transition: transform 0.08s ease, filter 0.08s ease;
+    }
+    .touch-press:active {
+      transform: scale(0.94);
+      filter: brightness(0.9);
+    }
+    /* Court attack line striping */
+    .court-3m-line {
+      border-bottom: 2px dashed rgba(255, 255, 255, 0.45);
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-start antialiased pb-safe">
+
+  <div class="w-full max-w-md flex flex-col h-screen max-h-[920px] p-2 sm:p-3 justify-between">
+    <!-- Top Bar: Sets, Undo, BoxScore, CSV -->
+    <header class="flex items-center justify-between py-1 px-1 border-b border-slate-800">
+      <div class="flex items-center space-x-1.5">
+        <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Set</span>
+        <div class="flex bg-slate-900 border border-slate-700/80 rounded-lg p-0.5" id="setSelector">
+          <button onclick="changeSet(1)" id="btnSet1" class="px-2 py-0.5 text-xs font-mono font-bold rounded bg-amber-500 text-slate-950 shadow">1</button>
+          <button onclick="changeSet(2)" id="btnSet2" class="px-2 py-0.5 text-xs font-mono font-medium rounded text-slate-400">2</button>
+          <button onclick="changeSet(3)" id="btnSet3" class="px-2 py-0.5 text-xs font-mono font-medium rounded text-slate-400">3</button>
+          <button onclick="changeSet(4)" id="btnSet4" class="px-2 py-0.5 text-xs font-mono font-medium rounded text-slate-400">4</button>
+          <button onclick="changeSet(5)" id="btnSet5" class="px-2 py-0.5 text-xs font-mono font-medium rounded text-slate-400">5</button>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-1">
+        <button onclick="undoLastAction()" class="touch-press px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center gap-1 text-xs font-semibold" title="Undo">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          <span class="text-[11px]">Undo</span>
+        </button>
+        <button onclick="openStatsModal()" class="touch-press px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:text-amber-300 flex items-center gap-1 text-xs font-semibold" title="Stats">
+          <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
+          <span class="text-[11px]">Stats</span>
+        </button>
+        <button onclick="downloadCSV()" class="touch-press p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-emerald-400" title="Export CSV">
+          <i data-lucide="download" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Top Team Cards: Home Team (Blue) vs Away Team (Red) -->
+    <section class="grid grid-cols-2 gap-2.5 mt-2">
+      <!-- Home Team Card -->
+      <div onclick="selectTeam('home')" id="homeTeamHeaderCard" class="touch-press relative bg-gradient-to-br from-sky-600 to-sky-700 rounded-xl p-2.5 shadow-lg border-2 border-sky-400 cursor-pointer overflow-hidden flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-extrabold uppercase tracking-wide text-sky-100 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Home Team
+          </span>
+          <span class="text-[10px] font-mono bg-sky-950/40 text-sky-200 px-1.5 py-0.5 rounded font-bold" id="homeSetsWon">0 Sets</span>
+        </div>
+        <div class="flex items-center justify-between mt-1">
+          <div class="text-3xl font-mono font-extrabold text-white tracking-tight" id="homeScore">0</div>
+          <div class="flex space-x-1">
+            <button onclick="event.stopPropagation(); scoreAdjust('home', 1)" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 text-white font-bold flex items-center justify-center text-sm shadow">+</button>
+            <button onclick="event.stopPropagation(); scoreAdjust('home', -1)" class="w-7 h-7 rounded-lg bg-black/20 hover:bg-black/30 text-white font-semibold flex items-center justify-center text-xs">-</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Away Team Card -->
+      <div onclick="selectTeam('away')" id="awayTeamHeaderCard" class="touch-press relative bg-gradient-to-br from-rose-600 to-rose-700 rounded-xl p-2.5 shadow-lg border border-transparent cursor-pointer overflow-hidden flex flex-col justify-between opacity-90">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-extrabold uppercase tracking-wide text-rose-100 flex items-center gap-1">
+            Away Team
+          </span>
+          <span class="text-[10px] font-mono bg-rose-950/40 text-rose-200 px-1.5 py-0.5 rounded font-bold" id="awaySetsWon">0 Sets</span>
+        </div>
+        <div class="flex items-center justify-between mt-1">
+          <div class="text-3xl font-mono font-extrabold text-white tracking-tight" id="awayScore">0</div>
+          <div class="flex space-x-1">
+            <button onclick="event.stopPropagation(); scoreAdjust('away', 1)" class="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 text-white font-bold flex items-center justify-center text-sm shadow">+</button>
+            <button onclick="event.stopPropagation(); scoreAdjust('away', -1)" class="w-7 h-7 rounded-lg bg-black/20 hover:bg-black/30 text-white font-semibold flex items-center justify-center text-xs">-</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Selection Indicator Sub-Bar -->
+    <div class="flex items-center justify-between px-2 py-1 bg-slate-900/90 rounded-lg border border-slate-800 text-[11px] font-medium text-slate-300">
+      <div class="flex items-center gap-1.5">
+        <span class="text-slate-500">Selected:</span>
+        <span id="activeSelectionLabel" class="font-bold text-amber-400">Home Team • #1</span>
+      </div>
+      <span id="lastStatToast" class="text-[10px] text-slate-400 font-mono">Tap player & action</span>
+    </div>
+
+    <!-- Main Section: 3 Columns matching user's layout -->
+    <div class="grid grid-cols-12 gap-1.5 sm:gap-2 flex-1 my-1">
+      
+      <!-- LEFT COLUMN: Home Team Player 1-6 (Yellow) & Action Buttons (Blue) -->
+      <div class="col-span-3 flex flex-col justify-between space-y-1">
+        <!-- Player buttons 1 to 6 (Yellow pills matching sketch) -->
+        <div class="flex flex-col space-y-1">
+          <button onclick="quickPickPlayer('home', 1)" id="homeP1" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">1</button>
+          <button onclick="quickPickPlayer('home', 2)" id="homeP2" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">2</button>
+          <button onclick="quickPickPlayer('home', 3)" id="homeP3" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">3</button>
+          <button onclick="quickPickPlayer('home', 4)" id="homeP4" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">4</button>
+          <button onclick="quickPickPlayer('home', 5)" id="homeP5" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">5</button>
+          <button onclick="quickPickPlayer('home', 6)" id="homeP6" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">6</button>
+        </div>
+
+        <!-- Action buttons (Blue matching sketch) -->
+        <div class="flex flex-col space-y-1 pt-1 border-t border-slate-800">
+          <button onclick="selectSkill('home', 'Serve')" id="btnSkill_home_Serve" class="touch-press h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Serve</button>
+          <button onclick="selectSkill('home', 'Attack')" id="btnSkill_home_Attack" class="touch-press h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Attack</button>
+          <button onclick="selectSkill('home', 'Block')" id="btnSkill_home_Block" class="touch-press h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Block</button>
+          <button onclick="selectSkill('home', 'Opposite Error')" id="btnSkill_home_Opposite_Error" class="touch-press h-8 rounded-lg bg-sky-700 hover:bg-sky-600 text-sky-100 font-bold text-[10px] leading-tight text-center px-1 shadow border border-sky-500">Opp Error</button>
+        </div>
+      </div>
+
+      <!-- MIDDLE COLUMN: Volleyball Court & Dynamic Outcome Selector Area -->
+      <div class="col-span-6 flex flex-col justify-between space-y-1.5">
+        
+        <!-- Interactive Court Container -->
+        <div class="flex-1 bg-slate-900 border-2 border-slate-700 rounded-xl overflow-hidden shadow-2xl flex flex-col min-h-[280px]">
+          
+          <!-- AWAY COURT (Top Half - Red) -->
+          <div class="flex-1 bg-gradient-to-b from-rose-800/90 to-rose-700/80 p-1.5 flex flex-col justify-between relative border-b border-white/40">
+            <!-- Back Row: Rotate (Left) + Player 6 (Center) -->
+            <div class="flex items-center justify-between">
+              <button onclick="rotateTeam('away')" class="touch-press px-1.5 py-1 rounded bg-rose-950/60 hover:bg-rose-950 border border-rose-400/50 text-[10px] font-bold text-rose-200 flex items-center gap-0.5 shadow">
+                <i data-lucide="rotate-cw" class="w-3 h-3 text-rose-300"></i> Rotate
+              </button>
+              <!-- Position 6 Circle -->
+              <div onclick="courtPlayerClicked('away', 6)" id="court_away_6" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
+                6
+              </div>
+              <div class="w-10"></div> <!-- Spacer for balance -->
+            </div>
+
+            <!-- Back Row wings: Position 1 and Position 5 -->
+            <div class="flex items-center justify-between px-2">
+              <div onclick="courtPlayerClicked('away', 1)" id="court_away_1" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
+                1
+              </div>
+              <div onclick="courtPlayerClicked('away', 5)" id="court_away_5" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
+                5
+              </div>
+            </div>
+
+            <!-- Away 3m Attack Line -->
+            <div class="w-full court-3m-line pb-0.5"></div>
+
+            <!-- Front Row near net: Position 2, 3, 4 -->
+            <div class="flex items-center justify-around px-1 pb-0.5">
+              <div onclick="courtPlayerClicked('away', 2)" id="court_away_2" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
+                2
+              </div>
+              <div onclick="courtPlayerClicked('away', 3)" id="court_away_3" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
+                3
+              </div>
+              <div onclick="courtPlayerClicked('away', 4)" id="court_away_4" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
+                4
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTER NET LINE -->
+          <div class="h-2 bg-gradient-to-r from-amber-400 via-white to-amber-400 flex items-center justify-center shadow-sm relative z-10">
+            <span class="text-[8px] font-mono font-black text-slate-900 uppercase tracking-widest px-1 bg-white/90 rounded">NET</span>
+          </div>
+
+          <!-- HOME COURT (Bottom Half - Blue) -->
+          <div class="flex-1 bg-gradient-to-b from-sky-700/80 to-sky-800/90 p-1.5 flex flex-col justify-between relative border-t border-white/40">
+            <!-- Front Row near net: Position 4, 3, 2 -->
+            <div class="flex items-center justify-around px-1 pt-0.5">
+              <div onclick="courtPlayerClicked('home', 4)" id="court_home_4" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
+                4
+              </div>
+              <div onclick="courtPlayerClicked('home', 3)" id="court_home_3" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
+                3
+              </div>
+              <div onclick="courtPlayerClicked('home', 2)" id="court_home_2" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
+                2
+              </div>
+            </div>
+
+            <!-- Home 3m Attack Line -->
+            <div class="w-full court-3m-line pt-0.5"></div>
+
+            <!-- Back Row wings: Position 5 and Position 1 -->
+            <div class="flex items-center justify-between px-2">
+              <div onclick="courtPlayerClicked('home', 5)" id="court_home_5" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
+                5
+              </div>
+              <div onclick="courtPlayerClicked('home', 1)" id="court_home_1" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
+                1
+              </div>
+            </div>
+
+            <!-- Back Row bottom: Position 6 + Rotate (Right) -->
+            <div class="flex items-center justify-between">
+              <div class="w-10"></div> <!-- Spacer for balance -->
+              <!-- Position 6 Circle -->
+              <div onclick="courtPlayerClicked('home', 6)" id="court_home_6" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
+                6
+              </div>
+              <button onclick="rotateTeam('home')" class="touch-press px-1.5 py-1 rounded bg-sky-950/60 hover:bg-sky-950 border border-sky-400/50 text-[10px] font-bold text-sky-200 flex items-center gap-0.5 shadow">
+                <i data-lucide="rotate-cw" class="w-3 h-3 text-sky-300"></i> Rotate
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- "Choose different outcome here" section from sketch -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-2 min-h-[140px] flex flex-col justify-between shadow-inner">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400" id="outcomePanelHeader">Select Action Outcome:</span>
+            <span class="text-[9px] font-mono text-amber-400 uppercase font-semibold" id="activeSkillBadge">Serve</span>
+          </div>
+
+          <!-- Dynamic Outcome Buttons Container -->
+          <div id="outcomesContainer" class="grid grid-cols-2 gap-1.5 my-1.5">
+            <!-- Injected via JavaScript based on selected skill -->
+          </div>
+
+          <!-- Quick Reception/Pass strip (Bonus essential volleyball stat) -->
+          <div class="flex items-center justify-between pt-1 border-t border-slate-800/80">
+            <span class="text-[9px] font-mono text-slate-500 uppercase">Pass:</span>
+            <div class="flex space-x-1">
+              <button onclick="recordPass(3)" class="touch-press px-1.5 py-0.5 rounded bg-emerald-600/80 text-[10px] font-bold text-white shadow">#3</button>
+              <button onclick="recordPass(2)" class="touch-press px-1.5 py-0.5 rounded bg-teal-600/80 text-[10px] font-bold text-white shadow">#2</button>
+              <button onclick="recordPass(1)" class="touch-press px-1.5 py-0.5 rounded bg-amber-600/80 text-[10px] font-bold text-white shadow">#1</button>
+              <button onclick="recordPass(0)" class="touch-press px-1.5 py-0.5 rounded bg-rose-600/80 text-[10px] font-bold text-white shadow">#0</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Away Team Player 1-6 (Purple) & Action Buttons (Red) -->
+      <div class="col-span-3 flex flex-col justify-between space-y-1">
+        <!-- Player buttons 1 to 6 (Purple pills matching sketch) -->
+        <div class="flex flex-col space-y-1">
+          <button onclick="quickPickPlayer('away', 1)" id="awayP1" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">1</button>
+          <button onclick="quickPickPlayer('away', 2)" id="awayP2" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">2</button>
+          <button onclick="quickPickPlayer('away', 3)" id="awayP3" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">3</button>
+          <button onclick="quickPickPlayer('away', 4)" id="awayP4" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">4</button>
+          <button onclick="quickPickPlayer('away', 5)" id="awayP5" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">5</button>
+          <button onclick="quickPickPlayer('away', 6)" id="awayP6" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">6</button>
+        </div>
+
+        <!-- Action buttons (Red matching sketch) -->
+        <div class="flex flex-col space-y-1 pt-1 border-t border-slate-800">
+          <button onclick="selectSkill('away', 'Serve')" id="btnSkill_away_Serve" class="touch-press h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Serve</button>
+          <button onclick="selectSkill('away', 'Attack')" id="btnSkill_away_Attack" class="touch-press h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Attack</button>
+          <button onclick="selectSkill('away', 'Block')" id="btnSkill_away_Block" class="touch-press h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Block</button>
+          <button onclick="selectSkill('away', 'Opposite Error')" id="btnSkill_away_Opposite_Error" class="touch-press h-8 rounded-lg bg-rose-700 hover:bg-rose-600 text-rose-100 font-bold text-[10px] leading-tight text-center px-1 shadow border border-rose-500">Opp Error</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Box Score & Summary Modal -->
+  <div id="statsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-3 flex items-center justify-center">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col p-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="font-bold text-white text-base flex items-center gap-2">
+          <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i> Match Stats Box Score
+        </h3>
+        <button onclick="closeStatsModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto flex-1 my-3 pr-1 hide-scrollbar">
+        <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-1.5">Home Team Stats</h4>
+        <table class="w-full text-left text-[11px] text-slate-300 font-mono mb-4">
+          <thead class="bg-slate-950 text-slate-400">
+            <tr>
+              <th class="p-1">#</th>
+              <th class="p-1 text-center">Pts</th>
+              <th class="p-1 text-center">Kills</th>
+              <th class="p-1 text-center">Aces</th>
+              <th class="p-1 text-center">Blocks</th>
+              <th class="p-1 text-center">Pass Avg</th>
+            </tr>
+          </thead>
+          <tbody id="homeStatsTableBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+
+        <h4 class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-1.5">Away Team Stats</h4>
+        <table class="w-full text-left text-[11px] text-slate-300 font-mono">
+          <thead class="bg-slate-950 text-slate-400">
+            <tr>
+              <th class="p-1">#</th>
+              <th class="p-1 text-center">Pts</th>
+              <th class="p-1 text-center">Kills</th>
+              <th class="p-1 text-center">Aces</th>
+              <th class="p-1 text-center">Blocks</th>
+              <th class="p-1 text-center">Pass Avg</th>
+            </tr>
+          </thead>
+          <tbody id="awayStatsTableBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+        <button onclick="confirmResetAll()" id="btnResetMatch" class="touch-press px-3 py-1.5 rounded-lg bg-rose-950/70 border border-rose-800 text-rose-300 text-xs font-semibold">
+          Reset Match
+        </button>
+        <button onclick="closeStatsModal()" class="touch-press px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold">
+          Close
+        </button>
+      </div>
+      <div id="resetConfirmPanel" class="hidden mt-2 p-2 rounded-lg bg-rose-900/40 border border-rose-700/80 flex items-center justify-between">
+        <span class="text-[11px] text-rose-200">Reset match & stats?</span>
+        <div class="flex space-x-1.5">
+          <button onclick="executeResetAll()" class="touch-press px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-bold">Yes, Reset</button>
+          <button onclick="cancelResetPrompt()" class="touch-press px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[11px]">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State management
+    const state = {
+      currentSet: 1,
+      activeTeam: 'home', // 'home' | 'away'
+      activePlayer: 1,    // 1 to 6
+      activeSkill: 'Serve', // 'Serve' | 'Attack' | 'Block' | 'Opposite Error'
+      sets: {
+        1: { home: 0, away: 0 },
+        2: { home: 0, away: 0 },
+        3: { home: 0, away: 0 },
+        4: { home: 0, away: 0 },
+        5: { home: 0, away: 0 }
+      },
+      // Court Rotations: Volleyball positions (P1, P6, P5, P4, P3, P2)
+      // Standard initial line up
+      rotations: {
+        home: [1, 6, 5, 4, 3, 2],
+        away: [1, 6, 5, 4, 3, 2]
+      },
+      // Player stats map
+      stats: {
+        home: {},
+        away: {}
+      },
+      // Undo history
+      history: []
+    };
+
+    // Initialize stats containers for players 1 to 6
+    for (let i = 1; i <= 6; i++) {
+      state.stats.home[i] = { pts: 0, kills: 0, attackErrors: 0, aces: 0, serveErrors: 0, blocks: 0, passes: 0, passSum: 0 };
+      state.stats.away[i] = { pts: 0, kills: 0, attackErrors: 0, aces: 0, serveErrors: 0, blocks: 0, passes: 0, passSum: 0 };
+    }
+
+    // Outcomes configuration for the center bottom outcome area
+    const skillOutcomes = {
+      'Serve': [
+        { label: 'Ace (+1 Pt)', outcome: 'ace', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+        { label: 'In-Play (Good)', outcome: 'in_play', pointFor: null, class: 'bg-slate-700 hover:bg-slate-600 text-slate-100' },
+        { label: 'Error (+1 Opp)', outcome: 'error', pointFor: 'opposite', class: 'bg-rose-600 hover:bg-rose-500 text-white' }
+      ],
+      'Attack': [
+        { label: 'Kill (+1 Pt)', outcome: 'kill', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+        { label: 'In-Play (Rally)', outcome: 'in_play', pointFor: null, class: 'bg-slate-700 hover:bg-slate-600 text-slate-100' },
+        { label: 'Error / Out (+1 Opp)', outcome: 'error', pointFor: 'opposite', class: 'bg-rose-600 hover:bg-rose-500 text-white' },
+        { label: 'Blocked (+1 Opp)', outcome: 'blocked', pointFor: 'opposite', class: 'bg-amber-600 hover:bg-amber-500 text-white' }
+      ],
+      'Block': [
+        { label: 'Block Pt (+1 Pt)', outcome: 'block_point', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+        { label: 'Touch / Slow', outcome: 'touch', pointFor: null, class: 'bg-slate-700 hover:bg-slate-600 text-slate-100' },
+        { label: 'Net Viol (+1 Opp)', outcome: 'net_error', pointFor: 'opposite', class: 'bg-rose-600 hover:bg-rose-500 text-white' }
+      ],
+      'Opposite Error': [
+        { label: 'Opp Att Out (+1 Pt)', outcome: 'opp_att_out', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+        { label: 'Opp Net Touch (+1 Pt)', outcome: 'opp_net', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+        { label: 'Opp Srv Err (+1 Pt)', outcome: 'opp_serve_err', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+        { label: 'Other Error (+1 Pt)', outcome: 'opp_other_err', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' }
+      ]
+    };
+
+    function selectTeam(team) {
+      state.activeTeam = team;
+      updateHeaderSelectionUI();
+      renderOutcomes();
+    }
+
+    function quickPickPlayer(team, playerNum) {
+      state.activeTeam = team;
+      state.activePlayer = playerNum;
+      updateHeaderSelectionUI();
+      renderOutcomes();
+    }
+
+    function courtPlayerClicked(team, posIndex) {
+      // Find which jersey number is in this court slot
+      const jerseyNumber = state.rotations[team][posIndex - 1] || posIndex;
+      quickPickPlayer(team, jerseyNumber);
+    }
+
+    function selectSkill(team, skillName) {
+      state.activeTeam = team;
+      state.activeSkill = skillName;
+      updateHeaderSelectionUI();
+      renderOutcomes();
+    }
+
+    function updateHeaderSelectionUI() {
+      // Team Cards highlight
+      const homeCard = document.getElementById('homeTeamHeaderCard');
+      const awayCard = document.getElementById('awayTeamHeaderCard');
+      if (state.activeTeam === 'home') {
+        homeCard.classList.add('border-sky-300', 'ring-2', 'ring-sky-400');
+        homeCard.classList.remove('opacity-90');
+        awayCard.classList.remove('border-rose-300', 'ring-2', 'ring-rose-400');
+        awayCard.classList.add('opacity-90');
+      } else {
+        awayCard.classList.add('border-rose-300', 'ring-2', 'ring-rose-400');
+        awayCard.classList.remove('opacity-90');
+        homeCard.classList.remove('border-sky-300', 'ring-2', 'ring-sky-400');
+        homeCard.classList.add('opacity-90');
+      }
+
+      // Player side buttons highlight
+      for (let i = 1; i <= 6; i++) {
+        const hBtn = document.getElementById(`homeP${i}`);
+        const aBtn = document.getElementById(`awayP${i}`);
+        if (state.activeTeam === 'home' && state.activePlayer === i) {
+          hBtn.classList.add('ring-2', 'ring-white', 'scale-105');
+        } else {
+          hBtn.classList.remove('ring-2', 'ring-white', 'scale-105');
+        }
+        if (state.activeTeam === 'away' && state.activePlayer === i) {
+          aBtn.classList.add('ring-2', 'ring-white', 'scale-105');
+        } else {
+          aBtn.classList.remove('ring-2', 'ring-white', 'scale-105');
+        }
+      }
+
+      // Skill buttons highlight
+      const skills = ['Serve', 'Attack', 'Block', 'Opposite Error'];
+      skills.forEach(sk => {
+        const idSafe = sk.replace(' ', '_');
+        const hSkBtn = document.getElementById(`btnSkill_home_${idSafe}`);
+        const aSkBtn = document.getElementById(`btnSkill_away_${idSafe}`);
+        if (hSkBtn) {
+          if (state.activeTeam === 'home' && state.activeSkill === sk) {
+            hSkBtn.classList.add('ring-2', 'ring-white', 'brightness-125');
+          } else {
+            hSkBtn.classList.remove('ring-2', 'ring-white', 'brightness-125');
+          }
+        }
+        if (aSkBtn) {
+          if (state.activeTeam === 'away' && state.activeSkill === sk) {
+            aSkBtn.classList.add('ring-2', 'ring-white', 'brightness-125');
+          } else {
+            aSkBtn.classList.remove('ring-2', 'ring-white', 'brightness-125');
+          }
+        }
+      });
+
+      // Update text banner
+      const teamLabel = state.activeTeam === 'home' ? 'Home' : 'Away';
+      document.getElementById('activeSelectionLabel').textContent = `${teamLabel} Team • #${state.activePlayer} • ${state.activeSkill}`;
+      document.getElementById('activeSkillBadge').textContent = state.activeSkill;
+    }
+
+    function renderOutcomes() {
+      const container = document.getElementById('outcomesContainer');
+      container.innerHTML = '';
+      const list = skillOutcomes[state.activeSkill] || [];
+
+      list.forEach(item => {
+        const btn = document.createElement('button');
+        btn.onclick = () => recordAction(item);
+        btn.className = `touch-press py-2 px-2 rounded-lg font-bold text-xs shadow-md border border-white/10 ${item.class}`;
+        btn.textContent = item.label;
+        container.appendChild(btn);
+      });
+    }
+
+    // Rotate positions standard clockwise: 1 -> 6 -> 5 -> 4 -> 3 -> 2 -> 1
+    function rotateTeam(team) {
+      const rot = state.rotations[team];
+      // Save last and move forward
+      const last = rot.pop();
+      rot.unshift(last);
+      updateCourtDisplay();
+      showToast(`${team === 'home' ? 'Home' : 'Away'} Team Rotated!`);
+    }
+
+    function updateCourtDisplay() {
+      // Home positions: [P1, P6, P5, P4, P3, P2]
+      const h = state.rotations.home;
+      document.getElementById('court_home_1').textContent = h[0];
+      document.getElementById('court_home_6').textContent = h[1];
+      document.getElementById('court_home_5').textContent = h[2];
+      document.getElementById('court_home_4').textContent = h[3];
+      document.getElementById('court_home_3').textContent = h[4];
+      document.getElementById('court_home_2').textContent = h[5];
+
+      // Away positions: [P1, P6, P5, P4, P3, P2]
+      const a = state.rotations.away;
+      document.getElementById('court_away_1').textContent = a[0];
+      document.getElementById('court_away_6').textContent = a[1];
+      document.getElementById('court_away_5').textContent = a[2];
+      document.getElementById('court_away_4').textContent = a[3];
+      document.getElementById('court_away_3').textContent = a[4];
+      document.getElementById('court_away_2').textContent = a[5];
+    }
+
+    function recordAction(outcomeItem) {
+      const currentSetData = state.sets[state.currentSet];
+      const prevScore = { home: currentSetData.home, away: currentSetData.away };
+      const team = state.activeTeam;
+      const playerNum = state.activePlayer;
+      const playerStats = state.stats[team][playerNum];
+
+      let pointAwarded = null;
+
+      // Score adjustment based on outcome
+      if (outcomeItem.pointFor === 'same') {
+        currentSetData[team] += 1;
+        pointAwarded = team;
+        playerStats.pts += 1;
+
+        if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'ace') playerStats.aces++;
+        if (state.activeSkill === 'Attack' && outcomeItem.outcome === 'kill') playerStats.kills++;
+        if (state.activeSkill === 'Block' && outcomeItem.outcome === 'block_point') playerStats.blocks++;
+      } else if (outcomeItem.pointFor === 'opposite') {
+        const oppTeam = team === 'home' ? 'away' : 'home';
+        currentSetData[oppTeam] += 1;
+        pointAwarded = oppTeam;
+
+        if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'error') playerStats.serveErrors++;
+        if (state.activeSkill === 'Attack' && (outcomeItem.outcome === 'error' || outcomeItem.outcome === 'blocked')) playerStats.attackErrors++;
+      }
+
+      // Record in history for undo
+      state.history.push({
+        type: 'action',
+        set: state.currentSet,
+        team: team,
+        player: playerNum,
+        skill: state.activeSkill,
+        outcome: outcomeItem.outcome,
+        pointAwarded: pointAwarded,
+        prevScore: prevScore
+      });
+
+      updateScoreDisplay();
+      showToast(`${team.toUpperCase()} #${playerNum}: ${outcomeItem.label}`);
+      saveToLocalStorage();
+    }
+
+    function recordPass(rating) {
+      const team = state.activeTeam;
+      const playerNum = state.activePlayer;
+      const currentSetData = state.sets[state.currentSet];
+      const prevScore = { home: currentSetData.home, away: currentSetData.away };
+
+      state.stats[team][playerNum].passes++;
+      state.stats[team][playerNum].passSum += rating;
+
+      let pointAwarded = null;
+      if (rating === 0) { // Reception Error -> Opponent point
+        const oppTeam = team === 'home' ? 'away' : 'home';
+        currentSetData[oppTeam] += 1;
+        pointAwarded = oppTeam;
+      }
+
+      state.history.push({
+        type: 'pass',
+        set: state.currentSet,
+        team: team,
+        player: playerNum,
+        rating: rating,
+        pointAwarded: pointAwarded,
+        prevScore: prevScore
+      });
+
+      updateScoreDisplay();
+      showToast(`${team.toUpperCase()} #${playerNum} Pass: #${rating}`);
+      saveToLocalStorage();
+    }
+
+    function scoreAdjust(team, delta) {
+      const currentSetData = state.sets[state.currentSet];
+      const prevScore = { home: currentSetData.home, away: currentSetData.away };
+      currentSetData[team] = Math.max(0, currentSetData[team] + delta);
+
+      state.history.push({
+        type: 'manual_score',
+        set: state.currentSet,
+        team: team,
+        delta: delta,
+        prevScore: prevScore
+      });
+
+      updateScoreDisplay();
+      saveToLocalStorage();
+    }
+
+    function updateScoreDisplay() {
+      const cur = state.sets[state.currentSet];
+      document.getElementById('homeScore').textContent = cur.home;
+      document.getElementById('awayScore').textContent = cur.away;
+
+      // Sets won check
+      let homeSets = 0;
+      let awaySets = 0;
+      for (let s = 1; s <= 5; s++) {
+        const h = state.sets[s].home;
+        const a = state.sets[s].away;
+        const winPts = (s === 5) ? 15 : 25;
+        if ((h >= winPts || a >= winPts) && Math.abs(h - a) >= 2) {
+          if (h > a) homeSets++;
+          else awaySets++;
+        }
+      }
+      document.getElementById('homeSetsWon').textContent = `${homeSets} Sets`;
+      document.getElementById('awaySetsWon').textContent = `${awaySets} Sets`;
+    }
+
+    function changeSet(num) {
+      state.currentSet = num;
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.getElementById(`btnSet${i}`);
+        if (i === num) {
+          btn.className = "px-2 py-0.5 text-xs font-mono font-bold rounded bg-amber-500 text-slate-950 shadow";
+        } else {
+          btn.className = "px-2 py-0.5 text-xs font-mono font-medium rounded text-slate-400";
+        }
+      }
+      updateScoreDisplay();
+      showToast(`Switched to Set ${num}`);
+    }
+
+    function undoLastAction() {
+      if (state.history.length === 0) {
+        showToast("Nothing to undo!");
+        return;
+      }
+      const last = state.history.pop();
+      const curSet = state.sets[last.set];
+
+      // Restore score
+      if (last.prevScore) {
+        curSet.home = last.prevScore.home;
+        curSet.away = last.prevScore.away;
+      }
+
+      // Revert stat counters
+      if (last.type === 'action') {
+        const ps = state.stats[last.team][last.player];
+        if (last.pointAwarded === last.team) ps.pts = Math.max(0, ps.pts - 1);
+        if (last.outcome === 'ace') ps.aces = Math.max(0, ps.aces - 1);
+        if (last.outcome === 'kill') ps.kills = Math.max(0, ps.kills - 1);
+        if (last.outcome === 'block_point') ps.blocks = Math.max(0, ps.blocks - 1);
+        if (last.outcome === 'error' && last.skill === 'Serve') ps.serveErrors = Math.max(0, ps.serveErrors - 1);
+        if (last.outcome === 'error' && last.skill === 'Attack') ps.attackErrors = Math.max(0, ps.attackErrors - 1);
+      } else if (last.type === 'pass') {
+        const ps = state.stats[last.team][last.player];
+        ps.passes = Math.max(0, ps.passes - 1);
+        ps.passSum = Math.max(0, ps.passSum - last.rating);
+      }
+
+      updateScoreDisplay();
+      showToast("Undid last action!");
+      saveToLocalStorage();
+    }
+
+    function showToast(msg) {
+      document.getElementById('lastStatToast').textContent = msg;
+    }
+
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem('vb_tracker_state', JSON.stringify({
+          sets: state.sets,
+          stats: state.stats,
+          rotations: state.rotations
+        }));
+      } catch (e) {
+        console.error("Storage error", e);
+      }
+    }
+
+    function loadFromLocalStorage() {
+      try {
+        const saved = localStorage.getItem('vb_tracker_state');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.sets) state.sets = parsed.sets;
+          if (parsed.stats) state.stats = parsed.stats;
+          if (parsed.rotations) state.rotations = parsed.rotations;
+        }
+      } catch (e) {
+        console.error("Failed to load state", e);
+      }
+    }
+
+    function openStatsModal() {
+      renderStatsTable('home', 'homeStatsTableBody');
+      renderStatsTable('away', 'awayStatsTableBody');
+      cancelResetPrompt();
+      document.getElementById('statsModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeStatsModal() {
+      cancelResetPrompt();
+      document.getElementById('statsModal').classList.add('hidden');
+    }
+
+    function renderStatsTable(team, elementId) {
+      const tbody = document.getElementById(elementId);
+      tbody.innerHTML = '';
+      for (let i = 1; i <= 6; i++) {
+        const s = state.stats[team][i];
+        const passAvg = s.passes > 0 ? (s.passSum / s.passes).toFixed(2) : '-';
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/50";
+        tr.innerHTML = `
+          <td class="p-1 font-bold ${team === 'home' ? 'text-amber-400' : 'text-purple-300'}">#${i}</td>
+          <td class="p-1 text-center font-bold text-white">${s.pts}</td>
+          <td class="p-1 text-center">${s.kills}</td>
+          <td class="p-1 text-center">${s.aces}</td>
+          <td class="p-1 text-center">${s.blocks}</td>
+          <td class="p-1 text-center text-slate-400">${passAvg}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function confirmResetAll() {
+      const panel = document.getElementById('resetConfirmPanel');
+      if (panel) {
+        panel.classList.toggle('hidden');
+      }
+    }
+
+    function cancelResetPrompt() {
+      const panel = document.getElementById('resetConfirmPanel');
+      if (panel) {
+        panel.classList.add('hidden');
+      }
+    }
+
+    function executeResetAll() {
+      try {
+        localStorage.removeItem('vb_tracker_state');
+      } catch (e) {
+        console.error(e);
+      }
+      location.reload();
+    }
+
+    function downloadCSV() {
+      let csv = "Team,Player,Points,Kills,AttackErrors,Aces,ServeErrors,Blocks,PassAttempts,PassAvg\n";
+      ['home', 'away'].forEach(team => {
+        for (let i = 1; i <= 6; i++) {
+          const s = state.stats[team][i];
+          const passAvg = s.passes > 0 ? (s.passSum / s.passes).toFixed(2) : '0';
+          csv += `${team.toUpperCase()},#${i},${s.pts},${s.kills},${s.attackErrors},${s.aces},${s.serveErrors},${s.blocks},${s.passes},${passAvg}\n`;
+        }
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `volleyball_stats_set${state.currentSet}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast("CSV Downloaded!");
+    }
+
+    window.onload = function() {
+      loadFromLocalStorage();
+      lucide.createIcons();
+      updateCourtDisplay();
+      updateScoreDisplay();
+      updateHeaderSelectionUI();
+      renderOutcomes();
+    };
+  </script>
+</body>
+</html>
