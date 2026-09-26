@@ -58,9 +58,25 @@
       transform: scale(0.94);
       filter: brightness(0.9);
     }
-    /* Court attack line striping */
+    /* Fixed Court Dimensions: Exact 2:1 Ratio (18m length × 9m width standard) */
+    .court-container {
+      width: 175px;
+      height: 350px;
+      aspect-ratio: 1 / 2;
+      flex-shrink: 0;
+    }
+    .court-half {
+      height: calc(50% - 4px);
+    }
+    /* Official FIVB proportions: 3m front attack zone (33.3%) & 6m back zone (66.7%) */
+    .court-front-zone {
+      height: 33.3%;
+    }
+    .court-back-zone {
+      height: 66.7%;
+    }
     .court-3m-line {
-      border-bottom: 2px dashed rgba(255, 255, 255, 0.45);
+      border-bottom: 2px dashed rgba(255, 255, 255, 0.6);
     }
     .hide-scrollbar::-webkit-scrollbar {
       display: none;
@@ -88,15 +104,15 @@
       </div>
 
       <div class="flex items-center space-x-1">
-        <button onclick="undoLastAction()" class="touch-press px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center gap-1 text-xs font-semibold" title="Undo">
+        <button onclick="undoLastAction()" class="touch-press px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center gap-1 text-xs font-semibold" title="Undo">
           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
           <span class="text-[11px]">Undo</span>
         </button>
-        <button onclick="openLineupModal()" class="touch-press px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sky-400 hover:text-sky-300 flex items-center gap-1 text-xs font-semibold" title="Teams & Jersey Numbers">
+        <button onclick="openLineupModal()" class="touch-press px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sky-400 hover:text-sky-300 flex items-center gap-1 text-xs font-semibold" title="Teams, Lineup & Liberos">
           <i data-lucide="users" class="w-3.5 h-3.5"></i>
           <span class="text-[11px]">Teams</span>
         </button>
-        <button onclick="openStatsModal()" class="touch-press px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:text-amber-300 flex items-center gap-1 text-xs font-semibold" title="Stats">
+        <button onclick="openStatsModal()" class="touch-press px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-amber-400 hover:text-amber-300 flex items-center gap-1 text-xs font-semibold" title="Stats">
           <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
           <span class="text-[11px]">Stats</span>
         </button>
@@ -148,190 +164,202 @@
 
     <!-- Active Selection Indicator Sub-Bar -->
     <div class="flex items-center justify-between px-2 py-1 bg-slate-900/90 rounded-lg border border-slate-800 text-[11px] font-medium text-slate-300">
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5 truncate">
         <span class="text-slate-500">Selected:</span>
-        <span id="activeSelectionLabel" class="font-bold text-amber-400">Home Team • #1</span>
+        <span id="activeSelectionLabel" class="font-bold text-amber-400 truncate">Home Team • #1</span>
       </div>
-      <span id="lastStatToast" class="text-[10px] text-slate-400 font-mono">Tap player & action</span>
+      <span id="lastStatToast" class="text-[10px] text-slate-400 font-mono shrink-0 ml-1">Tap player & action</span>
     </div>
 
     <!-- Main Section: 3 Columns matching user's layout -->
     <div class="grid grid-cols-12 gap-1.5 sm:gap-2 flex-1 my-1">
       
-      <!-- LEFT COLUMN: Home Team Player 1-6 (Yellow) & Action Buttons (Blue) -->
+      <!-- LEFT COLUMN: Home Team Players & Actions -->
       <div class="col-span-3 flex flex-col justify-between space-y-1">
-        <div class="flex items-center justify-between pb-0.5">
-          <span class="text-[9px] font-mono text-sky-300 font-bold" id="homeSubsBadge">Subs: 0/6</span>
-          <button onclick="openSubModal('home')" class="touch-press px-1.5 py-0.5 rounded bg-sky-950/80 border border-sky-400/80 text-[10px] font-bold text-sky-200 flex items-center gap-0.5 hover:bg-sky-900 shadow">
-            <i data-lucide="arrow-left-right" class="w-3 h-3 text-sky-300"></i> Sub
-          </button>
+        <div class="flex items-center justify-between pb-0.5 gap-0.5">
+          <span class="text-[8px] font-mono text-sky-300 font-bold" id="homeSubsBadge">0/6</span>
+          <div class="flex items-center gap-0.5">
+            <button onclick="openLiberoModal('home')" class="touch-press px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-400/80 text-[10px] font-bold text-emerald-300 flex items-center gap-0.5 hover:bg-emerald-900 shadow" title="Libero replacement (Back-row only)">
+              <i data-lucide="shield" class="w-3 h-3 text-emerald-400"></i> Lib
+            </button>
+            <button onclick="openSubModal('home')" class="touch-press px-1 py-0.5 rounded bg-sky-950/80 border border-sky-400/80 text-[10px] font-bold text-sky-200 flex items-center gap-0.5 hover:bg-sky-900 shadow" title="Regular Substitution">
+              <i data-lucide="arrow-left-right" class="w-2.5 h-2.5 text-sky-300"></i> Sub
+            </button>
+          </div>
         </div>
         <!-- Player buttons for Home team (Rendered dynamically based on current jersey numbers) -->
-        <div class="flex flex-col space-y-1" id="homePlayerButtonsContainer">
-          <button onclick="quickPickPlayer('home', 1)" id="homeP1" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#1</button>
-          <button onclick="quickPickPlayer('home', 2)" id="homeP2" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#2</button>
-          <button onclick="quickPickPlayer('home', 3)" id="homeP3" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#3</button>
-          <button onclick="quickPickPlayer('home', 4)" id="homeP4" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#4</button>
-          <button onclick="quickPickPlayer('home', 5)" id="homeP5" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#5</button>
-          <button onclick="quickPickPlayer('home', 6)" id="homeP6" class="touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent">#6</button>
-        </div>
+        <div class="flex flex-col space-y-1" id="homePlayerButtonsContainer"></div>
 
         <!-- Action buttons (Blue matching sketch) -->
         <div class="flex flex-col space-y-1 pt-1 border-t border-slate-800">
-          <button onclick="selectSkill('home', 'Serve')" id="btnSkill_home_Serve" class="touch-press h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Serve</button>
-          <button onclick="selectSkill('home', 'Attack')" id="btnSkill_home_Attack" class="touch-press h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Attack</button>
-          <button onclick="selectSkill('home', 'Block')" id="btnSkill_home_Block" class="touch-press h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Block</button>
-          <button onclick="selectSkill('home', 'Opposite Error')" id="btnSkill_home_Opposite_Error" class="touch-press h-8 rounded-lg bg-sky-700 hover:bg-sky-600 text-sky-100 font-bold text-[10px] leading-tight text-center px-1 shadow border border-sky-500">Opp Error</button>
+          <button onclick="selectSkill('home', 'Serve')" id="btnSkill_home_Serve" class="touch-press h-7 sm:h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Serve</button>
+          <button onclick="selectSkill('home', 'Receive')" id="btnSkill_home_Receive" class="touch-press h-7 sm:h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Receive</button>
+          <button onclick="selectSkill('home', 'Attack')" id="btnSkill_home_Attack" class="touch-press h-7 sm:h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Attack</button>
+          <button onclick="selectSkill('home', 'Block')" id="btnSkill_home_Block" class="touch-press h-7 sm:h-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-sky-400">Block</button>
+          <button onclick="selectSkill('home', 'Opposite Error')" id="btnSkill_home_Opposite_Error" class="touch-press h-7 sm:h-8 rounded-lg bg-sky-700 hover:bg-sky-600 text-sky-100 font-bold text-[10px] leading-tight text-center px-1 shadow border border-sky-500">Opp Error</button>
         </div>
       </div>
 
       <!-- MIDDLE COLUMN: Volleyball Court & Dynamic Outcome Selector Area -->
-      <div class="col-span-6 flex flex-col justify-between space-y-1.5">
+      <div class="col-span-6 flex flex-col items-center justify-between space-y-1.5 overflow-hidden">
         
-        <!-- Interactive Court Container -->
-        <div class="flex-1 bg-slate-900 border-2 border-slate-700 rounded-xl overflow-hidden shadow-2xl flex flex-col min-h-[280px]">
+        <!-- Stationary Fixed-Size Court Container (Exact 2:1 Ratio: 175px × 350px) -->
+        <div class="court-container mx-auto bg-slate-900 border-2 border-white/60 rounded-xl overflow-hidden shadow-2xl flex flex-col select-none">
           
           <!-- AWAY COURT (Top Half - Red) -->
-          <div class="flex-1 bg-gradient-to-b from-rose-800/90 to-rose-700/80 p-1.5 flex flex-col justify-between relative border-b border-white/40">
-            <!-- Back Row: Rotate (Left) + Player 6 (Center) -->
-            <div class="flex items-center justify-between">
-              <button onclick="rotateTeam('away')" class="touch-press px-1.5 py-1 rounded bg-rose-950/60 hover:bg-rose-950 border border-rose-400/50 text-[10px] font-bold text-rose-200 flex items-center gap-0.5 shadow">
-                <i data-lucide="rotate-cw" class="w-3 h-3 text-rose-300"></i> Rotate
-              </button>
-              <!-- Position 6 Circle -->
-              <div onclick="courtPlayerClicked('away', 6)" id="court_away_6" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
-                6
+          <div class="court-half bg-gradient-to-b from-rose-700 to-rose-600 p-1 flex flex-col justify-between relative border-b border-white/50">
+            <!-- Back Zone (Positions 6, 1, 5) -->
+            <div class="court-back-zone flex flex-col justify-between">
+              <!-- Endline row: Rotate (Left) + Player 6 (Center) -->
+              <div class="flex items-center justify-between">
+                <button onclick="rotateTeam('away')" class="touch-press px-1.5 py-0.5 rounded bg-rose-950/70 hover:bg-rose-950 border border-rose-300/60 text-[9px] font-bold text-rose-100 flex items-center gap-0.5 shadow">
+                  <i data-lucide="rotate-cw" class="w-3 h-3 text-rose-300"></i> Rot
+                </button>
+                <!-- Position 6 Circle (Back-row) -->
+                <div onclick="courtPlayerClicked('away', 6)" id="court_away_6" class="touch-press w-7 h-7 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-purple-100 cursor-pointer relative">
+                  6
+                </div>
+                <div class="w-8"></div>
               </div>
-              <div class="w-10"></div> <!-- Spacer for balance -->
-            </div>
 
-            <!-- Back Row wings: Position 1 and Position 5 -->
-            <div class="flex items-center justify-between px-2">
-              <div onclick="courtPlayerClicked('away', 1)" id="court_away_1" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
-                1
-              </div>
-              <div onclick="courtPlayerClicked('away', 5)" id="court_away_5" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
-                5
+              <!-- Deep Wings: Position 1 and Position 5 (Back-row) -->
+              <div class="flex items-center justify-between px-2">
+                <div onclick="courtPlayerClicked('away', 1)" id="court_away_1" class="touch-press w-7 h-7 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-purple-100 cursor-pointer relative">
+                  1
+                </div>
+                <div onclick="courtPlayerClicked('away', 5)" id="court_away_5" class="touch-press w-7 h-7 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-purple-100 cursor-pointer relative">
+                  5
+                </div>
               </div>
             </div>
 
             <!-- Away 3m Attack Line -->
-            <div class="w-full court-3m-line pb-0.5"></div>
+            <div class="w-full court-3m-line my-0.5"></div>
 
-            <!-- Front Row near net: Position 2, 3, 4 -->
-            <div class="flex items-center justify-around px-1 pb-0.5">
-              <div onclick="courtPlayerClicked('away', 2)" id="court_away_2" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
+            <!-- Front Zone: Position 2, 3, 4 near net -->
+            <div class="court-front-zone flex items-center justify-around px-0.5">
+              <div onclick="courtPlayerClicked('away', 2)" id="court_away_2" class="touch-press w-7 h-7 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-purple-100 cursor-pointer relative">
                 2
               </div>
-              <div onclick="courtPlayerClicked('away', 3)" id="court_away_3" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
+              <div onclick="courtPlayerClicked('away', 3)" id="court_away_3" class="touch-press w-7 h-7 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-purple-100 cursor-pointer relative">
                 3
               </div>
-              <div onclick="courtPlayerClicked('away', 4)" id="court_away_4" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-purple-200 cursor-pointer">
+              <div onclick="courtPlayerClicked('away', 4)" id="court_away_4" class="touch-press w-7 h-7 rounded-full bg-purple-300 text-purple-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-purple-100 cursor-pointer relative">
                 4
               </div>
             </div>
           </div>
 
           <!-- CENTER NET LINE -->
-          <div class="h-2 bg-gradient-to-r from-amber-400 via-white to-amber-400 flex items-center justify-center shadow-sm relative z-10">
-            <span class="text-[8px] font-mono font-black text-slate-900 uppercase tracking-widest px-1 bg-white/90 rounded">NET</span>
+          <div class="h-2 bg-white flex items-center justify-between px-1 shadow-md relative z-10 border-y border-slate-900 shrink-0">
+            <span class="w-1.5 h-full bg-red-500 rounded-sm" title="Antenna"></span>
+            <span class="text-[7px] font-mono font-black text-slate-900 uppercase tracking-widest px-1 bg-amber-300 rounded leading-none py-0.5">NET</span>
+            <span class="w-1.5 h-full bg-red-500 rounded-sm" title="Antenna"></span>
           </div>
 
           <!-- HOME COURT (Bottom Half - Blue) -->
-          <div class="flex-1 bg-gradient-to-b from-sky-700/80 to-sky-800/90 p-1.5 flex flex-col justify-between relative border-t border-white/40">
-            <!-- Front Row near net: Position 4, 3, 2 -->
-            <div class="flex items-center justify-around px-1 pt-0.5">
-              <div onclick="courtPlayerClicked('home', 4)" id="court_home_4" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
+          <div class="court-half bg-gradient-to-b from-sky-600 to-sky-700 p-1 flex flex-col justify-between relative border-t border-white/50">
+            <!-- Front Zone: Position 4, 3, 2 near net -->
+            <div class="court-front-zone flex items-center justify-around px-0.5">
+              <div onclick="courtPlayerClicked('home', 4)" id="court_home_4" class="touch-press w-7 h-7 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-amber-200 cursor-pointer relative">
                 4
               </div>
-              <div onclick="courtPlayerClicked('home', 3)" id="court_home_3" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
+              <div onclick="courtPlayerClicked('home', 3)" id="court_home_3" class="touch-press w-7 h-7 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-amber-200 cursor-pointer relative">
                 3
               </div>
-              <div onclick="courtPlayerClicked('home', 2)" id="court_home_2" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
+              <div onclick="courtPlayerClicked('home', 2)" id="court_home_2" class="touch-press w-7 h-7 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-amber-200 cursor-pointer relative">
                 2
               </div>
             </div>
 
             <!-- Home 3m Attack Line -->
-            <div class="w-full court-3m-line pt-0.5"></div>
+            <div class="w-full court-3m-line my-0.5"></div>
 
-            <!-- Back Row wings: Position 5 and Position 1 -->
-            <div class="flex items-center justify-between px-2">
-              <div onclick="courtPlayerClicked('home', 5)" id="court_home_5" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
-                5
+            <!-- Back Zone (Positions 5, 1, 6) -->
+            <div class="court-back-zone flex flex-col justify-between">
+              <!-- Deep Wings: Position 5 and Position 1 (Back-row) -->
+              <div class="flex items-center justify-between px-2">
+                <div onclick="courtPlayerClicked('home', 5)" id="court_home_5" class="touch-press w-7 h-7 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-amber-200 cursor-pointer relative">
+                  5
+                </div>
+                <div onclick="courtPlayerClicked('home', 1)" id="court_home_1" class="touch-press w-7 h-7 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-amber-200 cursor-pointer relative">
+                  1
+                </div>
               </div>
-              <div onclick="courtPlayerClicked('home', 1)" id="court_home_1" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
-                1
-              </div>
-            </div>
 
-            <!-- Back Row bottom: Position 6 + Rotate (Right) -->
-            <div class="flex items-center justify-between">
-              <div class="w-10"></div> <!-- Spacer for balance -->
-              <!-- Position 6 Circle -->
-              <div onclick="courtPlayerClicked('home', 6)" id="court_home_6" class="touch-press w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs sm:text-sm flex items-center justify-center shadow-md border-2 border-amber-200 cursor-pointer">
-                6
+              <!-- Endline row: Position 6 (Center) + Rotate (Right) -->
+              <div class="flex items-center justify-between">
+                <div class="w-8"></div>
+                <!-- Position 6 Circle (Back-row) -->
+                <div onclick="courtPlayerClicked('home', 6)" id="court_home_6" class="touch-press w-7 h-7 rounded-full bg-amber-400 text-amber-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-amber-200 cursor-pointer relative">
+                  6
+                </div>
+                <button onclick="rotateTeam('home')" class="touch-press px-1.5 py-0.5 rounded bg-sky-950/70 hover:bg-sky-950 border border-sky-300/60 text-[9px] font-bold text-sky-100 flex items-center gap-0.5 shadow">
+                  <i data-lucide="rotate-cw" class="w-3 h-3 text-sky-300"></i> Rot
+                </button>
               </div>
-              <button onclick="rotateTeam('home')" class="touch-press px-1.5 py-1 rounded bg-sky-950/60 hover:bg-sky-950 border border-sky-400/50 text-[10px] font-bold text-sky-200 flex items-center gap-0.5 shadow">
-                <i data-lucide="rotate-cw" class="w-3 h-3 text-sky-300"></i> Rotate
-              </button>
             </div>
           </div>
         </div>
 
-        <!-- "Choose different outcome here" section from sketch -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-2 min-h-[140px] flex flex-col justify-between shadow-inner">
-          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400" id="outcomePanelHeader">Select Action Outcome:</span>
-            <span class="text-[9px] font-mono text-amber-400 uppercase font-semibold" id="activeSkillBadge">Serve</span>
+        <!-- Enlarged Fixed-Height Outcomes Container (Displays all buttons without scrolling) -->
+        <div class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2 h-[180px] shrink-0 flex flex-col justify-between shadow-inner">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-800 mb-1">
+            <span class="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">Outcomes</span>
+            <span id="activeSkillBadge" class="text-[10px] font-mono font-black text-amber-400 uppercase bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/40">Serve</span>
           </div>
-
-          <!-- Dynamic Outcome Buttons Container -->
-          <div id="outcomesContainer" class="grid grid-cols-2 gap-1.5 my-1.5">
-            <!-- Injected via JavaScript based on selected skill -->
-          </div>
-
-          <!-- Quick Reception/Pass strip (Bonus essential volleyball stat) -->
-          <div class="flex items-center justify-between pt-1 border-t border-slate-800/80">
-            <span class="text-[9px] font-mono text-slate-500 uppercase">Pass:</span>
-            <div class="flex space-x-1">
-              <button onclick="recordPass(3)" class="touch-press px-1.5 py-0.5 rounded bg-emerald-600/80 text-[10px] font-bold text-white shadow">#3</button>
-              <button onclick="recordPass(2)" class="touch-press px-1.5 py-0.5 rounded bg-teal-600/80 text-[10px] font-bold text-white shadow">#2</button>
-              <button onclick="recordPass(1)" class="touch-press px-1.5 py-0.5 rounded bg-amber-600/80 text-[10px] font-bold text-white shadow">#1</button>
-              <button onclick="recordPass(0)" class="touch-press px-1.5 py-0.5 rounded bg-rose-600/80 text-[10px] font-bold text-white shadow">#0</button>
-            </div>
+          <div id="outcomesContainer" class="grid grid-cols-2 gap-1.5 flex-1 content-start overflow-y-auto hide-scrollbar">
+            <!-- Dynamic outcome buttons rendered here -->
           </div>
         </div>
 
       </div>
 
-      <!-- RIGHT COLUMN: Away Team Player 1-6 (Purple) & Action Buttons (Red) -->
+      <!-- RIGHT COLUMN: Away Team Players & Actions -->
       <div class="col-span-3 flex flex-col justify-between space-y-1">
-        <div class="flex items-center justify-between pb-0.5">
-          <span class="text-[9px] font-mono text-rose-300 font-bold" id="awaySubsBadge">Subs: 0/6</span>
-          <button onclick="openSubModal('away')" class="touch-press px-1.5 py-0.5 rounded bg-rose-950/80 border border-rose-400/80 text-[10px] font-bold text-rose-200 flex items-center gap-0.5 hover:bg-rose-900 shadow">
-            <i data-lucide="arrow-left-right" class="w-3 h-3 text-rose-300"></i> Sub
-          </button>
+        <div class="flex items-center justify-between pb-0.5 gap-0.5">
+          <span class="text-[8px] font-mono text-rose-300 font-bold" id="awaySubsBadge">0/6</span>
+          <div class="flex items-center gap-0.5">
+            <button onclick="openLiberoModal('away')" class="touch-press px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-400/80 text-[10px] font-bold text-emerald-300 flex items-center gap-0.5 hover:bg-emerald-900 shadow" title="Libero replacement (Back-row only)">
+              <i data-lucide="shield" class="w-3 h-3 text-emerald-400"></i> Lib
+            </button>
+            <button onclick="openSubModal('away')" class="touch-press px-1 py-0.5 rounded bg-rose-950/80 border border-rose-400/80 text-[10px] font-bold text-rose-200 flex items-center gap-0.5 hover:bg-rose-900 shadow" title="Regular Substitution">
+              <i data-lucide="arrow-left-right" class="w-2.5 h-2.5 text-rose-300"></i> Sub
+            </button>
+          </div>
         </div>
         <!-- Player buttons for Away team (Rendered dynamically based on current jersey numbers) -->
-        <div class="flex flex-col space-y-1" id="awayPlayerButtonsContainer">
-          <button onclick="quickPickPlayer('away', 1)" id="awayP1" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#1</button>
-          <button onclick="quickPickPlayer('away', 2)" id="awayP2" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#2</button>
-          <button onclick="quickPickPlayer('away', 3)" id="awayP3" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#3</button>
-          <button onclick="quickPickPlayer('away', 4)" id="awayP4" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#4</button>
-          <button onclick="quickPickPlayer('away', 5)" id="awayP5" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#5</button>
-          <button onclick="quickPickPlayer('away', 6)" id="awayP6" class="touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent">#6</button>
-        </div>
+        <div class="flex flex-col space-y-1" id="awayPlayerButtonsContainer"></div>
 
         <!-- Action buttons (Red matching sketch) -->
         <div class="flex flex-col space-y-1 pt-1 border-t border-slate-800">
-          <button onclick="selectSkill('away', 'Serve')" id="btnSkill_away_Serve" class="touch-press h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Serve</button>
-          <button onclick="selectSkill('away', 'Attack')" id="btnSkill_away_Attack" class="touch-press h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Attack</button>
-          <button onclick="selectSkill('away', 'Block')" id="btnSkill_away_Block" class="touch-press h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Block</button>
-          <button onclick="selectSkill('away', 'Opposite Error')" id="btnSkill_away_Opposite_Error" class="touch-press h-8 rounded-lg bg-rose-700 hover:bg-rose-600 text-rose-100 font-bold text-[10px] leading-tight text-center px-1 shadow border border-rose-500">Opp Error</button>
+          <button onclick="selectSkill('away', 'Serve')" id="btnSkill_away_Serve" class="touch-press h-7 sm:h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Serve</button>
+          <button onclick="selectSkill('away', 'Receive')" id="btnSkill_away_Receive" class="touch-press h-7 sm:h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Receive</button>
+          <button onclick="selectSkill('away', 'Attack')" id="btnSkill_away_Attack" class="touch-press h-7 sm:h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Attack</button>
+          <button onclick="selectSkill('away', 'Block')" id="btnSkill_away_Block" class="touch-press h-7 sm:h-8 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow flex items-center justify-center border border-rose-400">Block</button>
+          <button onclick="selectSkill('away', 'Opposite Error')" id="btnSkill_away_Opposite_Error" class="touch-press h-7 sm:h-8 rounded-lg bg-rose-700 hover:bg-rose-600 text-rose-100 font-bold text-[10px] leading-tight text-center px-1 shadow border border-rose-500">Opp Error</button>
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Dedicated Libero Replacement Modal (Strictly Back-row: P1, P6, P5) -->
+  <div id="liberoModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm p-3 flex items-center justify-center">
+    <div class="bg-slate-900 border border-emerald-500/60 rounded-2xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
+          <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i>
+          <span id="liberoModalTitle">Libero Replacement</span>
+        </h3>
+        <button onclick="closeLiberoModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="liberoModalBody" class="space-y-3">
+        <!-- Dynamically rendered based on whether libero is on court or not -->
+      </div>
     </div>
   </div>
 
@@ -357,7 +385,8 @@
               <th class="p-1 text-center">Kills</th>
               <th class="p-1 text-center">Aces</th>
               <th class="p-1 text-center">Blocks</th>
-              <th class="p-1 text-center">Pass Avg</th>
+              <th class="p-1 text-center">Rec (A–F)</th>
+              <th class="p-1 text-center">Pos%</th>
             </tr>
           </thead>
           <tbody id="homeStatsTableBody" class="divide-y divide-slate-800"></tbody>
@@ -372,7 +401,8 @@
               <th class="p-1 text-center">Kills</th>
               <th class="p-1 text-center">Aces</th>
               <th class="p-1 text-center">Blocks</th>
-              <th class="p-1 text-center">Pass Avg</th>
+              <th class="p-1 text-center">Rec (A–F)</th>
+              <th class="p-1 text-center">Pos%</th>
             </tr>
           </thead>
           <tbody id="awayStatsTableBody" class="divide-y divide-slate-800"></tbody>
@@ -397,12 +427,13 @@
     </div>
   </div>
 
+  <!-- Regular Substitution Modal -->
   <div id="subModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm p-3 flex items-center justify-center">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm p-4 shadow-2xl flex flex-col space-y-3">
       <div class="flex items-center justify-between pb-2 border-b border-slate-800">
         <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
           <i data-lucide="arrow-left-right" class="w-4 h-4 text-amber-400"></i>
-          <span id="subModalTitle">Substitution (Home Team)</span>
+          <span id="subModalTitle">Substitution</span>
         </h3>
         <button onclick="closeSubModal()" class="text-slate-400 hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -432,11 +463,12 @@
     </div>
   </div>
 
+  <!-- Teams, Lineup & Liberos Modal -->
   <div id="lineupModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm p-3 flex items-center justify-center">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-4 shadow-2xl flex flex-col max-h-[90vh]">
       <div class="flex items-center justify-between pb-2 border-b border-slate-800">
         <h3 class="font-bold text-white text-sm flex items-center gap-1.5">
-          <i data-lucide="users" class="w-4 h-4 text-sky-400"></i> Teams & Starting Lineup
+          <i data-lucide="users" class="w-4 h-4 text-sky-400"></i> Teams, Starting Lineup & Liberos
         </h3>
         <button onclick="closeLineupModal()" class="text-slate-400 hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -450,8 +482,20 @@
             <span class="text-xs font-bold text-sky-400 uppercase tracking-wide">Home Team Name:</span>
             <input type="text" id="lineup_home_name" maxlength="20" placeholder="Home Team" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:border-sky-400 focus:outline-none w-36">
           </div>
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Starting 6 Jerseys (Positions P1–P6)</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Starting 6 (P1–P6)</span>
           <div class="grid grid-cols-6 gap-1.5" id="homeLineupInputs"></div>
+
+          <!-- Home Liberos (Max 2) -->
+          <div class="mt-2.5 pt-2 border-t border-sky-900/40 flex items-center justify-between">
+            <div class="flex items-center gap-1 text-[10px] font-bold text-emerald-400 uppercase">
+              <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Liberos (Max 2):</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <input type="number" id="lineup_home_lib1" min="1" max="99" placeholder="L1 #" class="w-14 bg-slate-900 border border-emerald-500/60 rounded p-1 text-center font-mono font-bold text-emerald-300 text-xs focus:border-emerald-400 focus:outline-none">
+              <input type="number" id="lineup_home_lib2" min="1" max="99" placeholder="L2 #" class="w-14 bg-slate-900 border border-emerald-500/60 rounded p-1 text-center font-mono font-bold text-emerald-300 text-xs focus:border-emerald-400 focus:outline-none">
+            </div>
+          </div>
         </div>
 
         <!-- Away Team Settings -->
@@ -460,8 +504,20 @@
             <span class="text-xs font-bold text-rose-400 uppercase tracking-wide">Away Team Name:</span>
             <input type="text" id="lineup_away_name" maxlength="20" placeholder="Away Team" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:border-rose-400 focus:outline-none w-36">
           </div>
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Starting 6 Jerseys (Positions P1–P6)</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide block mb-1.5">Starting 6 (P1–P6)</span>
           <div class="grid grid-cols-6 gap-1.5" id="awayLineupInputs"></div>
+
+          <!-- Away Liberos (Max 2) -->
+          <div class="mt-2.5 pt-2 border-t border-rose-900/40 flex items-center justify-between">
+            <div class="flex items-center gap-1 text-[10px] font-bold text-emerald-400 uppercase">
+              <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Liberos (Max 2):</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <input type="number" id="lineup_away_lib1" min="1" max="99" placeholder="L1 #" class="w-14 bg-slate-900 border border-emerald-500/60 rounded p-1 text-center font-mono font-bold text-emerald-300 text-xs focus:border-emerald-400 focus:outline-none">
+              <input type="number" id="lineup_away_lib2" min="1" max="99" placeholder="L2 #" class="w-14 bg-slate-900 border border-emerald-500/60 rounded p-1 text-center font-mono font-bold text-emerald-300 text-xs focus:border-emerald-400 focus:outline-none">
+            </div>
+          </div>
         </div>
       </div>
 
@@ -506,10 +562,20 @@
         home: 'Home Team',
         away: 'Away Team'
       },
+      // Max 2 liberos per team
+      liberos: {
+        home: [], // e.g. [10, 15]
+        away: []
+      },
+      // Tracks active libero replacement on court
+      liberoState: {
+        home: { active: false, liberoJersey: null, replacedJersey: null, posIndex: null },
+        away: { active: false, liberoJersey: null, replacedJersey: null, posIndex: null }
+      },
       currentSet: 1,
       activeTeam: 'home', // 'home' | 'away'
-      activePlayer: 1,    // 1 to 6
-      activeSkill: 'Serve', // 'Serve' | 'Attack' | 'Block' | 'Opposite Error'
+      activePlayer: 1,    // current selected jersey number
+      activeSkill: 'Serve', // 'Serve' | 'Receive' | 'Attack' | 'Block' | 'Opposite Error'
       sets: {
         1: { home: 0, away: 0 },
         2: { home: 0, away: 0 },
@@ -517,8 +583,7 @@
         4: { home: 0, away: 0 },
         5: { home: 0, away: 0 }
       },
-      // Court Rotations: Volleyball positions (P1, P6, P5, P4, P3, P2)
-      // Standard initial line up
+      // Court Rotations: [P1, P6, P5, P4, P3, P2]
       rotations: {
         home: [1, 6, 5, 4, 3, 2],
         away: [1, 6, 5, 4, 3, 2]
@@ -536,10 +601,40 @@
       history: []
     };
 
+    // Mapping FIVB court positions (1-6) to the rotation array index [P1, P6, P5, P4, P3, P2]
+    const POS_TO_INDEX = {
+      1: 0, // P1 (Serving / Right Back - Back Row)
+      6: 1, // P6 (Middle Back - Back Row)
+      5: 2, // P5 (Left Back - Back Row)
+      4: 3, // P4 (Left Front - Front Row)
+      3: 4, // P3 (Middle Front - Front Row)
+      2: 5  // P2 (Right Front - Front Row)
+    };
+
+    // Back-row court positions (Allowed for Libero replacement)
+    const BACK_ROW_POSITIONS = [1, 6, 5];
+
+    function isLibero(team, jersey) {
+      if (!jersey) return false;
+      const libs = state.liberos[team] || [];
+      return libs.includes(parseInt(jersey));
+    }
+
     // Helper to ensure a player stats record exists
     function getOrCreatePlayerStats(team, jersey) {
       if (!state.stats[team][jersey]) {
-        state.stats[team][jersey] = { pts: 0, kills: 0, attackErrors: 0, aces: 0, serveErrors: 0, blocks: 0, passes: 0, passSum: 0 };
+        state.stats[team][jersey] = { 
+          pts: 0, 
+          kills: 0, 
+          attackErrors: 0, 
+          aces: 0, 
+          serveErrors: 0, 
+          blocks: 0, 
+          receives: { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 } 
+        };
+      }
+      if (!state.stats[team][jersey].receives) {
+        state.stats[team][jersey].receives = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
       }
       return state.stats[team][jersey];
     }
@@ -550,23 +645,33 @@
       getOrCreatePlayerStats('away', num);
     });
 
-    // Outcomes configuration for the center bottom outcome area
+    // Outcomes configuration
     const skillOutcomes = {
       'Serve': [
         { label: 'Ace (+1 Pt)', outcome: 'ace', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
         { label: 'In-Play (Good)', outcome: 'in_play', pointFor: null, class: 'bg-slate-700 hover:bg-slate-600 text-slate-100' },
-        { label: 'Error (+1 Opp)', outcome: 'error', pointFor: 'opposite', class: 'bg-rose-600 hover:bg-rose-500 text-white' }
+        { label: 'Error (+1 Opp)', outcome: 'error', pointFor: 'opposite', class: 'col-span-2 bg-rose-600 hover:bg-rose-500 text-white' }
+      ],
+      'Receive': [
+        { label: 'A • Perfect (3)', outcome: 'rec_a', grade: 'A', pointFor: null, class: 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold' },
+        { label: 'B • Positive (2)', outcome: 'rec_b', grade: 'B', pointFor: null, class: 'bg-lime-500 hover:bg-lime-400 text-slate-950 font-bold' },
+        { label: 'C • Medium (1)', outcome: 'rec_c', grade: 'C', pointFor: null, class: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold' },
+        { label: 'D • Poor / Scramble', outcome: 'rec_d', grade: 'D', pointFor: null, class: 'bg-orange-500 hover:bg-orange-400 text-white font-bold' },
+        { label: 'E • Overpass / Slash', outcome: 'rec_e', grade: 'E', pointFor: null, class: 'bg-rose-500 hover:bg-rose-400 text-white font-bold' },
+        { label: 'F • Error / Ace (+1 Opp)', outcome: 'rec_f', grade: 'F', pointFor: 'opposite', class: 'bg-rose-700 hover:bg-rose-600 text-white font-bold' }
       ],
       'Attack': [
         { label: 'Kill (+1 Pt)', outcome: 'kill', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
-        { label: 'In-Play (Rally)', outcome: 'in_play', pointFor: null, class: 'bg-slate-700 hover:bg-slate-600 text-slate-100' },
-        { label: 'Error / Out (+1 Opp)', outcome: 'error', pointFor: 'opposite', class: 'bg-rose-600 hover:bg-rose-500 text-white' },
-        { label: 'Blocked (+1 Opp)', outcome: 'blocked', pointFor: 'opposite', class: 'bg-amber-600 hover:bg-amber-500 text-white' }
+        { label: 'In Play', outcome: 'in_play', pointFor: null, class: 'bg-slate-700 hover:bg-slate-600 text-slate-100' },
+        { label: 'Rebound', outcome: 'rebound', pointFor: null, class: 'bg-sky-700 hover:bg-sky-600 text-sky-100' },
+        { label: 'Blocked (+1 Opp)', outcome: 'blocked', pointFor: 'opposite', class: 'bg-amber-600 hover:bg-amber-500 text-white' },
+        { label: 'Error (+1 Opp)', outcome: 'error', pointFor: 'opposite', class: 'col-span-2 bg-rose-600 hover:bg-rose-500 text-white' }
       ],
       'Block': [
-        { label: 'Block Pt (+1 Pt)', outcome: 'block_point', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
-        { label: 'Touch / Slow', outcome: 'touch', pointFor: null, class: 'bg-slate-700 hover:bg-slate-600 text-slate-100' },
-        { label: 'Net Viol (+1 Opp)', outcome: 'net_error', pointFor: 'opposite', class: 'bg-rose-600 hover:bg-rose-500 text-white' }
+        { label: 'Score (+1 Pt)', outcome: 'block_score', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
+        { label: 'Rebound', outcome: 'rebound', pointFor: null, class: 'bg-sky-700 hover:bg-sky-600 text-sky-100' },
+        { label: 'Touch', outcome: 'touch', pointFor: null, class: 'bg-slate-700 hover:bg-slate-600 text-slate-100' },
+        { label: 'Error (+1 Opp)', outcome: 'error', pointFor: 'opposite', class: 'bg-rose-600 hover:bg-rose-500 text-white' }
       ],
       'Opposite Error': [
         { label: 'Opp Att Out (+1 Pt)', outcome: 'opp_att_out', pointFor: 'same', class: 'bg-emerald-600 hover:bg-emerald-500 text-white' },
@@ -591,8 +696,7 @@
     }
 
     function courtPlayerClicked(team, posIndex) {
-      // Find which jersey number is in this court slot
-      const jerseyNumber = state.rotations[team][posIndex - 1] || posIndex;
+      const jerseyNumber = state.rotations[team][POS_TO_INDEX[posIndex]];
       quickPickPlayer(team, jerseyNumber);
     }
 
@@ -604,31 +708,51 @@
     }
 
     function renderPlayerSideButtons() {
-      // Home player buttons
+      // Home player buttons: ordered P1 to P6 showing current rotated player
       const homeContainer = document.getElementById('homePlayerButtonsContainer');
       homeContainer.innerHTML = '';
-      const homeJerseys = [...new Set(state.rotations.home)];
-      homeJerseys.forEach(jersey => {
+      for (let pos = 1; pos <= 6; pos++) {
+        const jersey = state.rotations.home[POS_TO_INDEX[pos]];
+        const isLib = isLibero('home', jersey);
         const btn = document.createElement('button');
-        btn.id = `homeP${jersey}`;
+        btn.id = `homePosBtn_${pos}`;
+        btn.setAttribute('data-jersey', jersey);
         btn.onclick = () => quickPickPlayer('home', jersey);
-        btn.className = `touch-press h-8 rounded-lg bg-amber-400 text-amber-950 font-mono font-black text-sm flex items-center justify-center shadow border border-amber-300 ring-2 ring-transparent`;
-        btn.textContent = `#${jersey}`;
+        
+        const bgClass = isLib ? 'bg-emerald-400 text-emerald-950 border-emerald-300' : 'bg-amber-400 text-amber-950 border-amber-300';
+        btn.className = `touch-press h-8 rounded-lg ${bgClass} font-mono font-bold text-xs flex items-center justify-between px-2 shadow border ring-2 ring-transparent transition-all`;
+        btn.innerHTML = `
+          <span class="text-[9px] font-bold ${isLib ? 'text-emerald-900/80' : 'text-amber-900/70'} uppercase">P${pos}</span>
+          <span class="text-xs font-black font-mono flex items-center gap-0.5">
+            #${jersey}
+            ${isLib ? '<span class="text-[8px] bg-emerald-900 text-emerald-100 px-1 rounded-sm leading-none py-0.5">L</span>' : ''}
+          </span>
+        `;
         homeContainer.appendChild(btn);
-      });
+      }
 
-      // Away player buttons
+      // Away player buttons: ordered P1 to P6 showing current rotated player
       const awayContainer = document.getElementById('awayPlayerButtonsContainer');
       awayContainer.innerHTML = '';
-      const awayJerseys = [...new Set(state.rotations.away)];
-      awayJerseys.forEach(jersey => {
+      for (let pos = 1; pos <= 6; pos++) {
+        const jersey = state.rotations.away[POS_TO_INDEX[pos]];
+        const isLib = isLibero('away', jersey);
         const btn = document.createElement('button');
-        btn.id = `awayP${jersey}`;
+        btn.id = `awayPosBtn_${pos}`;
+        btn.setAttribute('data-jersey', jersey);
         btn.onclick = () => quickPickPlayer('away', jersey);
-        btn.className = `touch-press h-8 rounded-lg bg-purple-300 text-purple-950 font-mono font-black text-sm flex items-center justify-center shadow border border-purple-200 ring-2 ring-transparent`;
-        btn.textContent = `#${jersey}`;
+        
+        const bgClass = isLib ? 'bg-emerald-400 text-emerald-950 border-emerald-300' : 'bg-purple-300 text-purple-950 border-purple-200';
+        btn.className = `touch-press h-8 rounded-lg ${bgClass} font-mono font-bold text-xs flex items-center justify-between px-2 shadow border ring-2 ring-transparent transition-all`;
+        btn.innerHTML = `
+          <span class="text-[9px] font-bold ${isLib ? 'text-emerald-900/80' : 'text-purple-900/70'} uppercase">P${pos}</span>
+          <span class="text-xs font-black font-mono flex items-center gap-0.5">
+            #${jersey}
+            ${isLib ? '<span class="text-[8px] bg-emerald-900 text-emerald-100 px-1 rounded-sm leading-none py-0.5">L</span>' : ''}
+          </span>
+        `;
         awayContainer.appendChild(btn);
-      });
+      }
 
       // Update substitution badges for current set
       const curSet = state.currentSet;
@@ -657,26 +781,48 @@
       // Player side buttons highlight
       const allHomeBtns = document.querySelectorAll('#homePlayerButtonsContainer button');
       allHomeBtns.forEach(btn => {
-        const j = parseInt(btn.textContent.replace('#', ''));
+        const j = parseInt(btn.getAttribute('data-jersey'));
         if (state.activeTeam === 'home' && state.activePlayer === j) {
-          btn.classList.add('ring-2', 'ring-white', 'scale-105');
+          btn.classList.add('ring-2', 'ring-white', 'scale-105', 'shadow-lg');
         } else {
-          btn.classList.remove('ring-2', 'ring-white', 'scale-105');
+          btn.classList.remove('ring-2', 'ring-white', 'scale-105', 'shadow-lg');
         }
       });
 
       const allAwayBtns = document.querySelectorAll('#awayPlayerButtonsContainer button');
       allAwayBtns.forEach(btn => {
-        const j = parseInt(btn.textContent.replace('#', ''));
+        const j = parseInt(btn.getAttribute('data-jersey'));
         if (state.activeTeam === 'away' && state.activePlayer === j) {
-          btn.classList.add('ring-2', 'ring-white', 'scale-105');
+          btn.classList.add('ring-2', 'ring-white', 'scale-105', 'shadow-lg');
         } else {
-          btn.classList.remove('ring-2', 'ring-white', 'scale-105');
+          btn.classList.remove('ring-2', 'ring-white', 'scale-105', 'shadow-lg');
         }
       });
 
+      // Synchronize court circle highlights with selected player
+      for (let pos = 1; pos <= 6; pos++) {
+        const hCourtEl = document.getElementById(`court_home_${pos}`);
+        const aCourtEl = document.getElementById(`court_away_${pos}`);
+        if (hCourtEl) {
+          const j = state.rotations.home[POS_TO_INDEX[pos]];
+          if (state.activeTeam === 'home' && state.activePlayer === j) {
+            hCourtEl.classList.add('ring-4', 'ring-white', 'scale-110');
+          } else {
+            hCourtEl.classList.remove('ring-4', 'ring-white', 'scale-110');
+          }
+        }
+        if (aCourtEl) {
+          const j = state.rotations.away[POS_TO_INDEX[pos]];
+          if (state.activeTeam === 'away' && state.activePlayer === j) {
+            aCourtEl.classList.add('ring-4', 'ring-white', 'scale-110');
+          } else {
+            aCourtEl.classList.remove('ring-4', 'ring-white', 'scale-110');
+          }
+        }
+      }
+
       // Skill buttons highlight
-      const skills = ['Serve', 'Attack', 'Block', 'Opposite Error'];
+      const skills = ['Serve', 'Receive', 'Attack', 'Block', 'Opposite Error'];
       skills.forEach(sk => {
         const idSafe = sk.replace(' ', '_');
         const hSkBtn = document.getElementById(`btnSkill_home_${idSafe}`);
@@ -699,7 +845,8 @@
 
       // Update text banner
       const teamLabel = state.teamNames[state.activeTeam] || (state.activeTeam === 'home' ? 'Home' : 'Away');
-      document.getElementById('activeSelectionLabel').textContent = `${teamLabel} • #${state.activePlayer} • ${state.activeSkill}`;
+      const isLib = isLibero(state.activeTeam, state.activePlayer);
+      document.getElementById('activeSelectionLabel').textContent = `${teamLabel} • #${state.activePlayer}${isLib ? ' (L)' : ''} • ${state.activeSkill}`;
       document.getElementById('activeSkillBadge').textContent = state.activeSkill;
     }
 
@@ -747,7 +894,7 @@
       list.forEach(item => {
         const btn = document.createElement('button');
         btn.onclick = () => recordAction(item);
-        btn.className = `touch-press py-2 px-2 rounded-lg font-bold text-xs shadow-md border border-white/10 ${item.class}`;
+        btn.className = `touch-press py-2 px-1.5 rounded-lg font-bold text-xs shadow-md border border-white/10 flex items-center justify-center text-center leading-tight min-h-[36px] ${item.class}`;
         btn.textContent = item.label;
         container.appendChild(btn);
       });
@@ -756,32 +903,82 @@
     // Rotate positions standard clockwise: 1 -> 6 -> 5 -> 4 -> 3 -> 2 -> 1
     function rotateTeam(team) {
       const rot = state.rotations[team];
-      // Save last and move forward
       const last = rot.pop();
       rot.unshift(last);
+
+      let liberoAutoReturned = null;
+
+      // Smart Libero Front-Row Rule Check:
+      // Index 3 corresponds to Position 4 (Left Front, front row).
+      // If the player rotating into Position 4 is a Libero, standard volleyball rules mandate
+      // that the Libero must swap back with the original player they replaced!
+      const playerInP4 = rot[3];
+      if (isLibero(team, playerInP4) && state.liberoState[team].active) {
+        const origJersey = state.liberoState[team].replacedJersey;
+        const libJersey = state.liberoState[team].liberoJersey;
+        rot[3] = origJersey;
+        liberoAutoReturned = {
+          liberoJersey: libJersey,
+          replacedJersey: origJersey,
+          prevLiberoState: { ...state.liberoState[team] }
+        };
+        state.liberoState[team].active = false;
+        state.liberoState[team].liberoJersey = null;
+        state.liberoState[team].replacedJersey = null;
+        state.liberoState[team].posIndex = null;
+      }
+
+      // Save rotation action to history for Undo
+      state.history.push({
+        type: 'rotate',
+        team: team,
+        liberoAutoReturned: liberoAutoReturned
+      });
+
       updateCourtDisplay();
+      renderPlayerSideButtons();
+
+      // Automatically select the new server (P1)
+      const newServer = rot[0];
+      quickPickPlayer(team, newServer);
+
       const teamName = state.teamNames[team] || (team === 'home' ? 'Home' : 'Away');
-      showToast(`${teamName} Rotated!`);
+      if (liberoAutoReturned) {
+        showToast(`${teamName} Rot: Libero #${liberoAutoReturned.liberoJersey} returned (#${liberoAutoReturned.replacedJersey} to P4)`);
+      } else {
+        showToast(`${teamName} Rotated! #${newServer} now serving (P1)`);
+      }
+      saveToLocalStorage();
     }
 
     function updateCourtDisplay() {
-      // Home positions: [P1, P6, P5, P4, P3, P2]
-      const h = state.rotations.home;
-      document.getElementById('court_home_1').textContent = h[0];
-      document.getElementById('court_home_6').textContent = h[1];
-      document.getElementById('court_home_5').textContent = h[2];
-      document.getElementById('court_home_4').textContent = h[3];
-      document.getElementById('court_home_3').textContent = h[4];
-      document.getElementById('court_home_2').textContent = h[5];
-
-      // Away positions: [P1, P6, P5, P4, P3, P2]
-      const a = state.rotations.away;
-      document.getElementById('court_away_1').textContent = a[0];
-      document.getElementById('court_away_6').textContent = a[1];
-      document.getElementById('court_away_5').textContent = a[2];
-      document.getElementById('court_away_4').textContent = a[3];
-      document.getElementById('court_away_3').textContent = a[4];
-      document.getElementById('court_away_2').textContent = a[5];
+      ['home', 'away'].forEach(team => {
+        const rot = state.rotations[team];
+        for (let pos = 1; pos <= 6; pos++) {
+          const el = document.getElementById(`court_${team}_${pos}`);
+          if (el) {
+            const jersey = rot[POS_TO_INDEX[pos]];
+            const isLib = isLibero(team, jersey);
+            el.textContent = jersey;
+            if (isLib) {
+              el.className = "touch-press w-7 h-7 rounded-full bg-emerald-400 text-emerald-950 font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 border-white cursor-pointer relative";
+              // Add small (L) badge
+              let badge = el.querySelector('.libero-badge');
+              if (!badge) {
+                badge = document.createElement('span');
+                badge.className = "libero-badge absolute -top-1.5 -right-1.5 bg-emerald-900 text-white font-mono text-[8px] font-black rounded px-0.5 border border-emerald-300 leading-none py-0.5 shadow";
+                badge.textContent = "L";
+                el.appendChild(badge);
+              }
+            } else {
+              const bg = team === 'home' ? 'bg-amber-400 text-amber-950 border-amber-200' : 'bg-purple-300 text-purple-950 border-purple-100';
+              el.className = `touch-press w-7 h-7 rounded-full ${bg} font-mono font-black text-xs flex items-center justify-center shadow-lg border-2 cursor-pointer relative`;
+              const badge = el.querySelector('.libero-badge');
+              if (badge) badge.remove();
+            }
+          }
+        }
+      });
     }
 
     function recordAction(outcomeItem) {
@@ -801,7 +998,7 @@
 
         if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'ace') playerStats.aces++;
         if (state.activeSkill === 'Attack' && outcomeItem.outcome === 'kill') playerStats.kills++;
-        if (state.activeSkill === 'Block' && outcomeItem.outcome === 'block_point') playerStats.blocks++;
+        if (state.activeSkill === 'Block' && (outcomeItem.outcome === 'block_score' || outcomeItem.outcome === 'block_point')) playerStats.blocks++;
       } else if (outcomeItem.pointFor === 'opposite') {
         const oppTeam = team === 'home' ? 'away' : 'home';
         currentSetData[oppTeam] += 1;
@@ -809,6 +1006,13 @@
 
         if (state.activeSkill === 'Serve' && outcomeItem.outcome === 'error') playerStats.serveErrors++;
         if (state.activeSkill === 'Attack' && (outcomeItem.outcome === 'error' || outcomeItem.outcome === 'blocked')) playerStats.attackErrors++;
+        if (state.activeSkill === 'Block' && outcomeItem.outcome === 'error') playerStats.blockErrors = (playerStats.blockErrors || 0) + 1;
+      }
+
+      // Track receive grades A through F
+      if (state.activeSkill === 'Receive' && outcomeItem.grade) {
+        if (!playerStats.receives) playerStats.receives = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
+        playerStats.receives[outcomeItem.grade] = (playerStats.receives[outcomeItem.grade] || 0) + 1;
       }
 
       // Record in history for undo
@@ -819,78 +1023,15 @@
         player: playerNum,
         skill: state.activeSkill,
         outcome: outcomeItem.outcome,
+        grade: outcomeItem.grade || null,
         pointAwarded: pointAwarded,
         prevScore: prevScore
       });
 
       updateScoreDisplay();
       const teamName = state.teamNames[team] || team.toUpperCase();
-      showToast(`${teamName} #${playerNum}: ${outcomeItem.label}`);
-      saveToLocalStorage();
-    }
-
-    function recordPass(rating) {
-      const team = state.activeTeam;
-      const playerNum = state.activePlayer;
-      const currentSetData = state.sets[state.currentSet];
-      const prevScore = { home: currentSetData.home, away: currentSetData.away };
-      const playerStats = getOrCreatePlayerStats(team, playerNum);
-
-      playerStats.passes++;
-      playerStats.passSum += rating;
-
-      let pointAwarded = null;
-      if (rating === 0) { // Reception Error -> Opponent point
-        const oppTeam = team === 'home' ? 'away' : 'home';
-        currentSetData[oppTeam] += 1;
-        pointAwarded = oppTeam;
-      }
-
-      state.history.push({
-        type: 'pass',
-        set: state.currentSet,
-        team: team,
-        player: playerNum,
-        rating: rating,
-        pointAwarded: pointAwarded,
-        prevScore: prevScore
-      });
-
-      updateScoreDisplay();
-      const teamName = state.teamNames[team] || team.toUpperCase();
-      showToast(`${teamName} #${playerNum} Pass: #${rating}`);
-      saveToLocalStorage();
-    }
-
-    function recordPass(rating) {
-      const team = state.activeTeam;
-      const playerNum = state.activePlayer;
-      const currentSetData = state.sets[state.currentSet];
-      const prevScore = { home: currentSetData.home, away: currentSetData.away };
-      const playerStats = getOrCreatePlayerStats(team, playerNum);
-
-      playerStats.passes++;
-      playerStats.passSum += rating;
-
-      let pointAwarded = null;
-      if (rating === 0) { // Reception Error -> Opponent point
-        const oppTeam = team === 'home' ? 'away' : 'home';
-        currentSetData[oppTeam] += 1;
-        pointAwarded = oppTeam;
-      }
-
-      state.history.push({
-        type: 'pass',
-        set: state.currentSet,
-        team: team,
-        player: playerNum,
-        rating: rating,
-        pointAwarded: pointAwarded,
-        prevScore: prevScore
-      });
-
-      updateScoreDisplay();
-      showToast(`${team.toUpperCase()} #${playerNum} Pass: #${rating}`);
+      const isLib = isLibero(team, playerNum);
+      showToast(`${teamName} #${playerNum}${isLib ? ' (L)' : ''}: ${outcomeItem.label}`);
       saveToLocalStorage();
     }
 
@@ -954,7 +1095,28 @@
       }
       const last = state.history.pop();
 
-      // Undo Substitution
+      // Undo Rotation
+      if (last.type === 'rotate') {
+        const rot = state.rotations[last.team];
+        // Rotate back (counter-clockwise)
+        const first = rot.shift();
+        rot.push(first);
+
+        // If a libero auto-return happened during this rotation, restore it!
+        if (last.liberoAutoReturned) {
+          rot[POS_TO_INDEX[5]] = last.liberoAutoReturned.liberoJersey;
+          state.liberoState[last.team] = last.liberoAutoReturned.prevLiberoState;
+        }
+
+        updateCourtDisplay();
+        renderPlayerSideButtons();
+        quickPickPlayer(last.team, rot[0]);
+        showToast(`Undid Rotation for ${state.teamNames[last.team]}`);
+        saveToLocalStorage();
+        return;
+      }
+
+      // Undo Regular Substitution
       if (last.type === 'sub') {
         state.rotations[last.team][last.positionIndex] = last.outJersey;
         state.substitutions[last.team][last.set] = Math.max(0, (state.substitutions[last.team][last.set] || 1) - 1);
@@ -963,6 +1125,19 @@
         renderPlayerSideButtons();
         updateHeaderSelectionUI();
         showToast(`Undid Sub: #${last.outJersey} back on court`);
+        saveToLocalStorage();
+        return;
+      }
+
+      // Undo Libero Replacement
+      if (last.type === 'libero_replacement') {
+        state.rotations[last.team][last.positionIndex] = last.restoredJersey;
+        state.liberoState[last.team] = last.prevLiberoState;
+        state.activePlayer = last.restoredJersey;
+        updateCourtDisplay();
+        renderPlayerSideButtons();
+        updateHeaderSelectionUI();
+        showToast(`Undid Libero swap (#${last.restoredJersey} restored)`);
         saveToLocalStorage();
         return;
       }
@@ -981,13 +1156,13 @@
         if (last.pointAwarded === last.team) ps.pts = Math.max(0, ps.pts - 1);
         if (last.outcome === 'ace') ps.aces = Math.max(0, ps.aces - 1);
         if (last.outcome === 'kill') ps.kills = Math.max(0, ps.kills - 1);
-        if (last.outcome === 'block_point') ps.blocks = Math.max(0, ps.blocks - 1);
+        if (last.outcome === 'block_score' || last.outcome === 'block_point') ps.blocks = Math.max(0, ps.blocks - 1);
         if (last.outcome === 'error' && last.skill === 'Serve') ps.serveErrors = Math.max(0, ps.serveErrors - 1);
-        if (last.outcome === 'error' && last.skill === 'Attack') ps.attackErrors = Math.max(0, ps.attackErrors - 1);
-      } else if (last.type === 'pass') {
-        const ps = getOrCreatePlayerStats(last.team, last.player);
-        ps.passes = Math.max(0, ps.passes - 1);
-        ps.passSum = Math.max(0, ps.passSum - last.rating);
+        if ((last.outcome === 'error' || last.outcome === 'blocked') && last.skill === 'Attack') ps.attackErrors = Math.max(0, ps.attackErrors - 1);
+        if (last.outcome === 'error' && last.skill === 'Block' && ps.blockErrors) ps.blockErrors = Math.max(0, ps.blockErrors - 1);
+        if (last.skill === 'Receive' && last.grade && ps.receives && ps.receives[last.grade] > 0) {
+          ps.receives[last.grade]--;
+        }
       }
 
       updateScoreDisplay();
@@ -999,6 +1174,287 @@
       document.getElementById('lastStatToast').textContent = msg;
     }
 
+    // ==================== LIBERO SYSTEM ====================
+    let activeLiberoTeam = 'home';
+    let selectedLiberoBackRowIndex = null;
+    let selectedLiberoBackRowJersey = null;
+    let selectedLiberoIncomingJersey = null;
+
+    function openLiberoModal(team) {
+      activeLiberoTeam = team;
+      const teamName = state.teamNames[team] || (team === 'home' ? 'Home' : 'Away');
+      document.getElementById('liberoModalTitle').textContent = `Libero • ${teamName}`;
+      const container = document.getElementById('liberoModalBody');
+      container.innerHTML = '';
+
+      const teamLiberos = state.liberos[team] || [];
+
+      // Check if Liberos are set up
+      if (teamLiberos.length === 0) {
+        container.innerHTML = `
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center space-y-2">
+            <p class="text-xs text-slate-300">No Liberos registered for ${teamName} yet.</p>
+            <p class="text-[11px] text-slate-400">Each team can have up to 2 Liberos.</p>
+            <button onclick="closeLiberoModal(); openLineupModal();" class="touch-press px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1 mx-auto mt-2">
+              <i data-lucide="shield" class="w-3.5 h-3.5"></i> Register Liberos Now
+            </button>
+          </div>
+        `;
+        document.getElementById('liberoModal').classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      const currentLibState = state.liberoState[team];
+
+      // Check if a Libero is CURRENTLY on court
+      if (currentLibState && currentLibState.active) {
+        const onCourtIndex = state.rotations[team].indexOf(currentLibState.liberoJersey);
+        let posLabel = "Back Row";
+        if (onCourtIndex === 0) posLabel = "Position 1 (Serve/RB)";
+        else if (onCourtIndex === 1) posLabel = "Position 6 (MB)";
+        else if (onCourtIndex === 2) posLabel = "Position 5 (LB)";
+
+        container.innerHTML = `
+          <div class="bg-emerald-950/40 p-3 rounded-xl border border-emerald-500/60 text-center space-y-2">
+            <div class="inline-flex items-center gap-1 text-emerald-300 font-bold text-xs uppercase tracking-wide">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Libero Active on Court
+            </div>
+            <div class="text-xl font-mono font-black text-white">#${currentLibState.liberoJersey}</div>
+            <p class="text-[11px] text-slate-300">
+              Playing at <strong class="text-amber-300">${posLabel}</strong><br>
+              Replacing original player: <strong class="text-white">#${currentLibState.replacedJersey}</strong>
+            </p>
+          </div>
+
+          <div class="space-y-1.5 pt-1">
+            <button onclick="executeLiberoReturn('${team}')" class="touch-press w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg">
+              <i data-lucide="arrow-left-right" class="w-4 h-4"></i> Swap Libero OFF (Return #${currentLibState.replacedJersey})
+            </button>
+            ${teamLiberos.length > 1 ? `
+              <div class="pt-2 border-t border-slate-800">
+                <span class="block text-[10px] text-slate-400 font-bold uppercase mb-1">Or swap with 2nd Libero:</span>
+                <div class="grid grid-cols-2 gap-2">
+                  ${teamLiberos.map(j => `
+                    <button onclick="executeLiberoToLiberoSwap('${team}', ${j})" ${j === currentLibState.liberoJersey ? 'disabled class="opacity-40 bg-slate-800 text-slate-500 p-2 rounded-lg text-xs font-mono font-bold"' : 'class="touch-press bg-emerald-950 border border-emerald-400/80 hover:bg-emerald-900 text-emerald-200 p-2 rounded-lg text-xs font-mono font-bold"'}>
+                      ${j === currentLibState.liberoJersey ? `#${j} (On Court)` : `Swap to #${j} (L)`}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        document.getElementById('liberoModal').classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      // No Libero currently on court -> Choose back-row player to replace
+      selectedLiberoBackRowIndex = null;
+      selectedLiberoBackRowJersey = null;
+      selectedLiberoIncomingJersey = teamLiberos[0]; // Default to L1
+
+      container.innerHTML = `
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wide">
+              1. Choose Back-Row Player (P1, P6, P5):
+            </label>
+            <span class="text-[9px] font-mono text-emerald-400 bg-emerald-950/70 px-1.5 py-0.5 rounded border border-emerald-600/40">FIVB Rule</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2" id="liberoBackRowChoices"></div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wide mb-1">
+            2. Choose Libero Coming ON:
+          </label>
+          <div class="grid grid-cols-${teamLiberos.length} gap-2" id="liberoIncomingChoices"></div>
+        </div>
+
+        <p class="text-[10px] text-slate-400 italic text-center">
+          *Libero replacements do not count toward your team's 6 substitution limit.
+        </p>
+
+        <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+          <button onclick="closeLiberoModal()" class="touch-press px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
+          <button onclick="confirmLiberoEntry()" class="touch-press px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-lg">
+            <i data-lucide="shield" class="w-3.5 h-3.5"></i> Confirm Entry
+          </button>
+        </div>
+      `;
+
+      // Render strictly back-row positions: P1, P6, P5
+      const backRowContainer = container.querySelector('#liberoBackRowChoices');
+      const posLabels = { 1: 'P1 (Serve/RB)', 6: 'P6 (Mid Back)', 5: 'P5 (Left Back)' };
+      BACK_ROW_POSITIONS.forEach((pos, idx) => {
+        const arrIdx = POS_TO_INDEX[pos];
+        const jersey = state.rotations[team][arrIdx];
+        const btn = document.createElement('button');
+        btn.className = `p-2 rounded-xl bg-slate-800 border border-slate-700 text-center hover:border-emerald-400 touch-press transition`;
+        btn.innerHTML = `
+          <div class="text-sm font-mono font-black text-amber-300">#${jersey}</div>
+          <div class="text-[9px] text-slate-300 font-semibold">${posLabels[pos]}</div>
+        `;
+        btn.onclick = () => {
+          backRowContainer.querySelectorAll('button').forEach(b => b.classList.remove('ring-2', 'ring-emerald-400', 'bg-slate-700'));
+          btn.classList.add('ring-2', 'ring-emerald-400', 'bg-slate-700');
+          selectedLiberoBackRowIndex = arrIdx;
+          selectedLiberoBackRowJersey = jersey;
+        };
+        backRowContainer.appendChild(btn);
+
+        // Auto-select P5 or P6 by default
+        if (idx === 0) btn.click();
+      });
+
+      // Render Libero choices (L1, L2)
+      const libChoicesContainer = container.querySelector('#liberoIncomingChoices');
+      teamLiberos.forEach((libJersey, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `p-2 rounded-xl bg-emerald-950/80 border border-emerald-400/80 text-center hover:bg-emerald-900 touch-press transition font-mono font-bold text-xs text-emerald-200`;
+        btn.innerHTML = `
+          <div class="text-[9px] text-emerald-400 uppercase">Libero ${idx + 1}</div>
+          <div class="text-base font-black text-white">#${libJersey}</div>
+        `;
+        btn.onclick = () => {
+          libChoicesContainer.querySelectorAll('button').forEach(b => b.classList.remove('ring-2', 'ring-white', 'bg-emerald-800'));
+          btn.classList.add('ring-2', 'ring-white', 'bg-emerald-800');
+          selectedLiberoIncomingJersey = libJersey;
+        };
+        libChoicesContainer.appendChild(btn);
+        if (idx === 0) btn.click();
+      });
+
+      document.getElementById('liberoModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeLiberoModal() {
+      document.getElementById('liberoModal').classList.add('hidden');
+    }
+
+    function confirmLiberoEntry() {
+      if (selectedLiberoBackRowIndex === null || !selectedLiberoBackRowJersey || !selectedLiberoIncomingJersey) {
+        showToast("Please select a back-row player and a Libero");
+        return;
+      }
+
+      const team = activeLiberoTeam;
+      const prevLiberoState = { ...state.liberoState[team] };
+
+      // Swap court position to Libero
+      state.rotations[team][selectedLiberoBackRowIndex] = selectedLiberoIncomingJersey;
+
+      // Update Libero state
+      state.liberoState[team] = {
+        active: true,
+        liberoJersey: selectedLiberoIncomingJersey,
+        replacedJersey: selectedLiberoBackRowJersey,
+        posIndex: selectedLiberoBackRowIndex
+      };
+
+      // Ensure stats entry exists
+      getOrCreatePlayerStats(team, selectedLiberoIncomingJersey);
+
+      // Record in history for undo (Note: does NOT consume regular sub quota)
+      state.history.push({
+        type: 'libero_replacement',
+        team: team,
+        positionIndex: selectedLiberoBackRowIndex,
+        restoredJersey: selectedLiberoBackRowJersey,
+        prevLiberoState: prevLiberoState
+      });
+
+      // Select newly entered Libero
+      state.activeTeam = team;
+      state.activePlayer = selectedLiberoIncomingJersey;
+
+      updateCourtDisplay();
+      renderPlayerSideButtons();
+      updateHeaderSelectionUI();
+      closeLiberoModal();
+      showToast(`Libero #${selectedLiberoIncomingJersey} entered for #${selectedLiberoBackRowJersey}`);
+      saveToLocalStorage();
+    }
+
+    function executeLiberoReturn(team) {
+      const curState = state.liberoState[team];
+      if (!curState || !curState.active) return;
+
+      const posIndex = state.rotations[team].indexOf(curState.liberoJersey);
+      if (posIndex === -1) {
+        showToast("Libero is no longer in rotation");
+        return;
+      }
+
+      const prevLiberoState = { ...curState };
+      const restored = curState.replacedJersey;
+      const leavingLib = curState.liberoJersey;
+
+      state.rotations[team][posIndex] = restored;
+      state.liberoState[team] = {
+        active: false,
+        liberoJersey: null,
+        replacedJersey: null,
+        posIndex: null
+      };
+
+      state.history.push({
+        type: 'libero_replacement',
+        team: team,
+        positionIndex: posIndex,
+        restoredJersey: leavingLib,
+        prevLiberoState: prevLiberoState
+      });
+
+      state.activeTeam = team;
+      state.activePlayer = restored;
+
+      updateCourtDisplay();
+      renderPlayerSideButtons();
+      updateHeaderSelectionUI();
+      closeLiberoModal();
+      showToast(`Libero #${leavingLib} OFF, #${restored} returned to court`);
+      saveToLocalStorage();
+    }
+
+    function executeLiberoToLiberoSwap(team, newLiberoJersey) {
+      const curState = state.liberoState[team];
+      if (!curState || !curState.active) return;
+
+      const posIndex = state.rotations[team].indexOf(curState.liberoJersey);
+      if (posIndex === -1) return;
+
+      const prevLiberoState = { ...curState };
+      const oldLib = curState.liberoJersey;
+
+      state.rotations[team][posIndex] = newLiberoJersey;
+      state.liberoState[team].liberoJersey = newLiberoJersey;
+
+      getOrCreatePlayerStats(team, newLiberoJersey);
+
+      state.history.push({
+        type: 'libero_replacement',
+        team: team,
+        positionIndex: posIndex,
+        restoredJersey: oldLib,
+        prevLiberoState: prevLiberoState
+      });
+
+      state.activeTeam = team;
+      state.activePlayer = newLiberoJersey;
+
+      updateCourtDisplay();
+      renderPlayerSideButtons();
+      updateHeaderSelectionUI();
+      closeLiberoModal();
+      showToast(`Libero-to-Libero swap: #${newLiberoJersey} IN for #${oldLib}`);
+      saveToLocalStorage();
+    }
+
+    // ==================== REGULAR SUBSTITUTIONS ====================
     let currentSubTeam = 'home';
     let selectedSubOutJersey = null;
     let selectedSubOutIndex = null;
@@ -1006,20 +1462,22 @@
     function openSubModal(team) {
       currentSubTeam = team;
       const teamName = state.teamNames[team] || (team === 'home' ? 'Home' : 'Away');
-      document.getElementById('subModalTitle').textContent = `Substitution (${teamName})`;
+      document.getElementById('subModalTitle').textContent = `Regular Sub (${teamName})`;
       const listContainer = document.getElementById('subOutPlayerList');
       listContainer.innerHTML = '';
       selectedSubOutJersey = null;
       selectedSubOutIndex = null;
       document.getElementById('subInJerseyInput').value = '';
 
-      // Positions standard: [P1, P6, P5, P4, P3, P2]
       const posNames = ['P1 (Serve)', 'P6 (Mid Back)', 'P5 (Left Back)', 'P4 (Left Front)', 'P3 (Mid Front)', 'P2 (Right Front)'];
       state.rotations[team].forEach((jersey, index) => {
+        const isLib = isLibero(team, jersey);
         const btn = document.createElement('button');
         btn.className = "p-2 rounded-lg bg-slate-800 border border-slate-700 text-left hover:border-amber-400 touch-press transition";
         btn.innerHTML = `
-          <div class="text-xs font-mono font-bold ${team === 'home' ? 'text-amber-400' : 'text-purple-300'}">#${jersey}</div>
+          <div class="text-xs font-mono font-bold ${isLib ? 'text-emerald-400' : (team === 'home' ? 'text-amber-400' : 'text-purple-300')}">
+            #${jersey} ${isLib ? '(L)' : ''}
+          </div>
           <div class="text-[9px] text-slate-400 truncate">${posNames[index]}</div>
         `;
         btn.onclick = () => {
@@ -1031,7 +1489,6 @@
         listContainer.appendChild(btn);
       });
 
-      // Default select the first player
       if (listContainer.firstElementChild) {
         listContainer.firstElementChild.click();
       }
@@ -1089,6 +1546,7 @@
       saveToLocalStorage();
     }
 
+    // ==================== TEAMS, LINEUP & LIBEROS SETUP ====================
     function openLineupModal() {
       const homeInputs = document.getElementById('homeLineupInputs');
       const awayInputs = document.getElementById('awayLineupInputs');
@@ -1099,28 +1557,32 @@
       document.getElementById('lineup_home_name').value = state.teamNames.home || 'Home Team';
       document.getElementById('lineup_away_name').value = state.teamNames.away || 'Away Team';
 
-      const posLabels = ['P1', 'P6', 'P5', 'P4', 'P3', 'P2'];
-      // Home
-      state.rotations.home.forEach((jersey, idx) => {
-        const div = document.createElement('div');
-        div.className = "flex flex-col items-center";
-        div.innerHTML = `
-          <span class="text-[9px] font-mono text-slate-400 mb-0.5">${posLabels[idx]}</span>
-          <input type="number" id="lineup_home_${idx}" value="${jersey}" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-amber-300 text-xs focus:border-amber-400 focus:outline-none">
+      // Setup positions P1 to P6 in standard order
+      for (let pos = 1; pos <= 6; pos++) {
+        const hJersey = state.rotations.home[POS_TO_INDEX[pos]];
+        const divH = document.createElement('div');
+        divH.className = "flex flex-col items-center";
+        divH.innerHTML = `
+          <span class="text-[9px] font-mono text-slate-400 mb-0.5">P${pos}</span>
+          <input type="number" id="lineup_home_pos${pos}" value="${hJersey}" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-amber-300 text-xs focus:border-amber-400 focus:outline-none">
         `;
-        homeInputs.appendChild(div);
-      });
+        homeInputs.appendChild(divH);
 
-      // Away
-      state.rotations.away.forEach((jersey, idx) => {
-        const div = document.createElement('div');
-        div.className = "flex flex-col items-center";
-        div.innerHTML = `
-          <span class="text-[9px] font-mono text-slate-400 mb-0.5">${posLabels[idx]}</span>
-          <input type="number" id="lineup_away_${idx}" value="${jersey}" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-rose-300 text-xs focus:border-rose-400 focus:outline-none">
+        const aJersey = state.rotations.away[POS_TO_INDEX[pos]];
+        const divA = document.createElement('div');
+        divA.className = "flex flex-col items-center";
+        divA.innerHTML = `
+          <span class="text-[9px] font-mono text-slate-400 mb-0.5">P${pos}</span>
+          <input type="number" id="lineup_away_pos${pos}" value="${aJersey}" min="1" max="99" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-rose-300 text-xs focus:border-rose-400 focus:outline-none">
         `;
-        awayInputs.appendChild(div);
-      });
+        awayInputs.appendChild(divA);
+      }
+
+      // Prefill Liberos (Max 2)
+      document.getElementById('lineup_home_lib1').value = (state.liberos.home && state.liberos.home[0]) || '';
+      document.getElementById('lineup_home_lib2').value = (state.liberos.home && state.liberos.home[1]) || '';
+      document.getElementById('lineup_away_lib1').value = (state.liberos.away && state.liberos.away[0]) || '';
+      document.getElementById('lineup_away_lib2').value = (state.liberos.away && state.liberos.away[1]) || '';
 
       document.getElementById('lineupModal').classList.remove('hidden');
       lucide.createIcons();
@@ -1131,28 +1593,37 @@
     }
 
     function saveLineupSetup() {
-      // Save team names if provided
       const hName = document.getElementById('lineup_home_name').value.trim();
       const aName = document.getElementById('lineup_away_name').value.trim();
       if (hName) state.teamNames.home = hName;
       if (aName) state.teamNames.away = aName;
 
-      // Collect Home numbers
-      for (let i = 0; i < 6; i++) {
-        const val = parseInt(document.getElementById(`lineup_home_${i}`).value);
-        if (val && val > 0) {
-          state.rotations.home[i] = val;
-          getOrCreatePlayerStats('home', val);
+      // Starting 6
+      for (let pos = 1; pos <= 6; pos++) {
+        const valH = parseInt(document.getElementById(`lineup_home_pos${pos}`).value);
+        if (valH && valH > 0) {
+          state.rotations.home[POS_TO_INDEX[pos]] = valH;
+          getOrCreatePlayerStats('home', valH);
+        }
+        const valA = parseInt(document.getElementById(`lineup_away_pos${pos}`).value);
+        if (valA && valA > 0) {
+          state.rotations.away[POS_TO_INDEX[pos]] = valA;
+          getOrCreatePlayerStats('away', valA);
         }
       }
-      // Collect Away numbers
-      for (let i = 0; i < 6; i++) {
-        const val = parseInt(document.getElementById(`lineup_away_${i}`).value);
-        if (val && val > 0) {
-          state.rotations.away[i] = val;
-          getOrCreatePlayerStats('away', val);
-        }
-      }
+
+      // Save Liberos (Max 2 per team)
+      state.liberos.home = [];
+      const hL1 = parseInt(document.getElementById('lineup_home_lib1').value);
+      const hL2 = parseInt(document.getElementById('lineup_home_lib2').value);
+      if (hL1 && hL1 > 0) { state.liberos.home.push(hL1); getOrCreatePlayerStats('home', hL1); }
+      if (hL2 && hL2 > 0 && hL2 !== hL1) { state.liberos.home.push(hL2); getOrCreatePlayerStats('home', hL2); }
+
+      state.liberos.away = [];
+      const aL1 = parseInt(document.getElementById('lineup_away_lib1').value);
+      const aL2 = parseInt(document.getElementById('lineup_away_lib2').value);
+      if (aL1 && aL1 > 0) { state.liberos.away.push(aL1); getOrCreatePlayerStats('away', aL1); }
+      if (aL2 && aL2 > 0 && aL2 !== aL1) { state.liberos.away.push(aL2); getOrCreatePlayerStats('away', aL2); }
 
       state.activePlayer = state.rotations[state.activeTeam][0] || 1;
       renderTeamNames();
@@ -1160,7 +1631,7 @@
       renderPlayerSideButtons();
       updateHeaderSelectionUI();
       closeLineupModal();
-      showToast("Teams and starting lineups updated!");
+      showToast("Teams, lineups and Liberos updated!");
       saveToLocalStorage();
     }
 
@@ -1168,6 +1639,8 @@
       try {
         localStorage.setItem('vb_tracker_state', JSON.stringify({
           teamNames: state.teamNames,
+          liberos: state.liberos,
+          liberoState: state.liberoState,
           sets: state.sets,
           stats: state.stats,
           rotations: state.rotations,
@@ -1184,6 +1657,8 @@
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed.teamNames) state.teamNames = parsed.teamNames;
+          if (parsed.liberos) state.liberos = parsed.liberos;
+          if (parsed.liberoState) state.liberoState = parsed.liberoState;
           if (parsed.sets) state.sets = parsed.sets;
           if (parsed.stats) state.stats = parsed.stats;
           if (parsed.rotations) state.rotations = parsed.rotations;
@@ -1216,16 +1691,24 @@
       
       playerJerseys.forEach(jersey => {
         const s = state.stats[team][jersey];
-        const passAvg = s.passes > 0 ? (s.passSum / s.passes).toFixed(2) : '-';
+        const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
+        const totalRec = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
+        const recBreakdown = totalRec > 0 ? `${r.A||0}/${r.B||0}/${r.C||0}/${r.D||0}/${r.E||0}/${r.F||0}` : '-';
+        const posRatio = totalRec > 0 ? Math.round((((r.A || 0) + (r.B || 0)) / totalRec) * 100) + '%' : '-';
+        const isLib = isLibero(team, jersey);
+
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-800/50";
         tr.innerHTML = `
-          <td class="p-1 font-bold ${team === 'home' ? 'text-amber-400' : 'text-purple-300'}">#${jersey}</td>
+          <td class="p-1 font-bold ${isLib ? 'text-emerald-400' : (team === 'home' ? 'text-amber-400' : 'text-purple-300')}">
+            #${jersey} ${isLib ? '<span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-500/50 px-1 rounded ml-0.5">L</span>' : ''}
+          </td>
           <td class="p-1 text-center font-bold text-white">${s.pts}</td>
           <td class="p-1 text-center">${s.kills}</td>
           <td class="p-1 text-center">${s.aces}</td>
           <td class="p-1 text-center">${s.blocks}</td>
-          <td class="p-1 text-center text-slate-400">${passAvg}</td>
+          <td class="p-1 text-center text-slate-300 text-[10px]">${recBreakdown} (${totalRec})</td>
+          <td class="p-1 text-center font-semibold text-emerald-400 text-[10px]">${posRatio}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -1233,16 +1716,12 @@
 
     function confirmResetAll() {
       const panel = document.getElementById('resetConfirmPanel');
-      if (panel) {
-        panel.classList.toggle('hidden');
-      }
+      if (panel) panel.classList.toggle('hidden');
     }
 
     function cancelResetPrompt() {
       const panel = document.getElementById('resetConfirmPanel');
-      if (panel) {
-        panel.classList.add('hidden');
-      }
+      if (panel) panel.classList.add('hidden');
     }
 
     function executeResetAll() {
@@ -1255,14 +1734,17 @@
     }
 
     function downloadCSV() {
-      let csv = "Team,Player,Points,Kills,AttackErrors,Aces,ServeErrors,Blocks,PassAttempts,PassAvg\n";
+      let csv = "Team,Player,Role,Points,Kills,AttackErrors,Aces,ServeErrors,Blocks,Rec_A,Rec_B,Rec_C,Rec_D,Rec_E,Rec_F,Total_Receives,Pos_Rec_Pct\n";
       ['home', 'away'].forEach(team => {
         const teamName = state.teamNames[team] || team.toUpperCase();
         const playerJerseys = Object.keys(state.stats[team]).map(Number).sort((a, b) => a - b);
         playerJerseys.forEach(jersey => {
           const s = state.stats[team][jersey];
-          const passAvg = s.passes > 0 ? (s.passSum / s.passes).toFixed(2) : '0';
-          csv += `"${teamName}",#${jersey},${s.pts},${s.kills},${s.attackErrors},${s.aces},${s.serveErrors},${s.blocks},${s.passes},${passAvg}\n`;
+          const r = s.receives || { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0 };
+          const totalRec = (r.A || 0) + (r.B || 0) + (r.C || 0) + (r.D || 0) + (r.E || 0) + (r.F || 0);
+          const posPct = totalRec > 0 ? Math.round((((r.A || 0) + (r.B || 0)) / totalRec) * 100) + '%' : '0%';
+          const role = isLibero(team, jersey) ? "Libero" : "Player";
+          csv += `"${teamName}",#${jersey},${role},${s.pts},${s.kills},${s.attackErrors},${s.aces},${s.serveErrors},${s.blocks},${r.A||0},${r.B||0},${r.C||0},${r.D||0},${r.E||0},${r.F||0},${totalRec},${posPct}\n`;
         });
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
