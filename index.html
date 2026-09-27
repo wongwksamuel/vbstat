@@ -680,7 +680,7 @@
         { label: 'Kill (+1 Pt)', bg: 'bg-emerald-600', text: 'text-white' },
         { label: 'In Play', bg: 'bg-cyan-600', text: 'text-white' },
         { label: 'Rebound', bg: 'bg-slate-700', text: 'text-white' },
-        { label: 'Blocked (+1 Opp)', bg: 'bg-rose-600', text: 'text-white' },
+        { label: 'Blocked', bg: 'bg-rose-600', text: 'text-white' },
         { label: 'Error (+1 Opp)', bg: 'bg-rose-800', text: 'text-white', colSpan: 2 }
       ],
       'Block': [
@@ -769,6 +769,9 @@
 
     function rotateCourt(team) {
       let current = { ...lineups[team] };
+      // Take snapshot of Libero state BEFORE it is mutated by the rotation
+      let oldLiberoSnapshot = JSON.parse(JSON.stringify(activeLibero[team]));
+      
       let newRot = {
         1: current[2],
         6: current[1],
@@ -799,7 +802,7 @@
         team: team,
         oldLineup: current,
         newLineup: newRot,
-        oldLiberoState: JSON.parse(JSON.stringify(activeLibero[team])) // simplified snapshot
+        oldLiberoState: oldLiberoSnapshot
       });
 
       lineups[team] = newRot;
@@ -1463,7 +1466,8 @@
         
         thead.innerHTML = ''; tbody.innerHTML = ''; tfoot.innerHTML = '';
 
-        let activeJerseys = Array.from(playerJerseys[team]).filter(j => {
+        // Filter out players with zero stats, and SORT them numerically
+        let activeJerseys = Array.from(playerJerseys[team]).sort((a, b) => a - b).filter(j => {
            let st = getAggregatedStats(team, j);
            let totalActions = st.points + st.attackAtt + st.serveAtt + (st.recA+st.recB+st.recC+st.recD+st.recE) + (st.blocks+st.blockErr+st.blockReb+st.blockTouch);
            return totalActions > 0;
@@ -1569,7 +1573,8 @@
 
       ['home', 'away'].forEach(team => {
         let tName = teamNames[team];
-        let activeJerseys = Array.from(playerJerseys[team]).filter(j => {
+        // Filter out zero stat players and SORT them numerically
+        let activeJerseys = Array.from(playerJerseys[team]).sort((a, b) => a - b).filter(j => {
            let st = getAggregatedStats(team, j);
            return (st.points + st.attackAtt + st.serveAtt + st.recA + st.recB + st.recC + st.recD + st.recE + st.blocks + st.blockErr + st.blockReb + st.blockTouch) > 0;
         });
