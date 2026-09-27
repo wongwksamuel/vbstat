@@ -667,21 +667,21 @@
       'Serve': [
         { label: 'Score (+1 Pt)', bg: 'bg-emerald-600', text: 'text-white' },
         { label: 'In Play', bg: 'bg-cyan-600', text: 'text-white' },
-        { label: 'Error (+1 Opp)', bg: 'bg-rose-600', text: 'text-white' }
+        { label: 'Error (+1 Opp)', bg: 'bg-rose-600', text: 'text-white', colSpan: 2 }
       ],
       'Receive': [
         { label: 'A • Perfect (3)', bg: 'bg-emerald-600', text: 'text-white' },
         { label: 'B • Positive (2)', bg: 'bg-lime-600', text: 'text-white' },
         { label: 'C • Medium (1)', bg: 'bg-amber-500', text: 'text-slate-950' },
         { label: 'D • Poor', bg: 'bg-orange-500', text: 'text-white' },
-        { label: 'E • Error', bg: 'bg-rose-600', text: 'text-white', colSpan: 2 } // Does NOT award +1 Opp anymore
+        { label: 'E • Error', bg: 'bg-rose-600', text: 'text-white', colSpan: 2 }
       ],
       'Attack': [
         { label: 'Kill (+1 Pt)', bg: 'bg-emerald-600', text: 'text-white' },
         { label: 'In Play', bg: 'bg-cyan-600', text: 'text-white' },
         { label: 'Rebound', bg: 'bg-slate-700', text: 'text-white' },
         { label: 'Blocked (+1 Opp)', bg: 'bg-rose-600', text: 'text-white' },
-        { label: 'Error (+1 Opp)', bg: 'bg-rose-800', text: 'text-white' }
+        { label: 'Error (+1 Opp)', bg: 'bg-rose-800', text: 'text-white', colSpan: 2 }
       ],
       'Block': [
         { label: 'Score (+1 Pt)', bg: 'bg-emerald-600', text: 'text-white' },
@@ -690,7 +690,7 @@
         { label: 'Error (+1 Opp)', bg: 'bg-rose-600', text: 'text-white' }
       ],
       'Opposite Error': [
-        { label: 'Opposite Error (+1 Pt)', bg: 'bg-amber-500', text: 'text-slate-950' }
+        { label: 'Opposite Error (+1 Pt)', bg: 'bg-amber-500', text: 'text-slate-950', colSpan: 2 }
       ]
     };
 
@@ -850,10 +850,10 @@
           let btn = document.getElementById(`btnAction_${t}_${s}`);
           if(!btn) return;
           if (t === activeSelection.team && s.replace('_', ' ') === activeSelection.skill) {
-            btn.classList.add('ring-2', 'ring-white', 'scale-105', 'z-10');
-            btn.classList.remove('opacity-70');
+            btn.classList.add('ring-2', 'ring-white', 'z-10');
+            btn.classList.remove('opacity-70', 'scale-105');
           } else {
-            btn.classList.remove('ring-2', 'ring-white', 'scale-105', 'z-10');
+            btn.classList.remove('ring-2', 'ring-white', 'z-10', 'scale-105');
             btn.classList.add('opacity-70');
           }
         });
@@ -906,31 +906,15 @@
       const outcomesList = OUTCOMES_CONFIG[skill];
       if(!outcomesList) return;
 
-      // Custom 5-button layout for Receive (A-E)
-      if(outcomesList.length === 5 && skill === 'Receive') {
-         let html = '<div class="grid grid-cols-2 gap-1.5 flex-1">';
-         outcomesList.forEach((outcome) => {
-            let colSpan = outcome.colSpan ? 'col-span-2' : 'col-span-1'; 
-            html += `<button onclick="recordAction('${skill}', '${outcome.label}')" class="touch-press ${colSpan} rounded-lg text-xs font-bold ${outcome.bg} ${outcome.text} border border-white/20 shadow flex items-center justify-center min-h-[36px] px-1 text-center leading-tight">
-              ${outcome.label}
-            </button>`;
-         });
-         html += '</div>';
-         container.innerHTML = html;
-      } 
-      else {
-        let cols = outcomesList.length % 2 === 0 ? 'grid-cols-2' : 'grid-cols-1';
-        if(outcomesList.length === 3) cols = 'grid-cols-1';
-
-        let html = `<div class="grid ${cols} gap-1.5 flex-1">`;
-        outcomesList.forEach(outcome => {
-          html += `<button onclick="recordAction('${skill}', '${outcome.label}')" class="touch-press rounded-lg text-xs font-bold ${outcome.bg} ${outcome.text} border border-white/20 shadow flex items-center justify-center min-h-[36px] px-1 text-center leading-tight">
-            ${outcome.label}
-          </button>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-      }
+      let html = '<div class="grid grid-cols-2 gap-1.5 flex-1">';
+      outcomesList.forEach(outcome => {
+        let colSpan = outcome.colSpan ? 'col-span-2' : 'col-span-1';
+        html += `<button onclick="recordAction('${skill}', '${outcome.label}')" class="touch-press ${colSpan} rounded-lg text-xs font-bold ${outcome.bg} ${outcome.text} border border-white/20 shadow flex items-center justify-center min-h-[36px] px-1 text-center leading-tight">
+          ${outcome.label}
+        </button>`;
+      });
+      html += '</div>';
+      container.innerHTML = html;
     }
 
     function recordAction(skill, outcome) {
