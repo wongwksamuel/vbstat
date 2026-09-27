@@ -343,19 +343,19 @@
       
       <!-- Home Action Buttons (Cyan) -->
       <div class="col-span-1 flex flex-col justify-between gap-1.5">
-        <button onclick="selectSkill('home', 'Serve')" id="btnAction_home_Serve" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center">
+        <button onclick="selectSkill('home', 'Serve')" id="btnAction_home_Serve" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center transition-all opacity-70">
           Serve
         </button>
-        <button onclick="selectSkill('home', 'Receive')" id="btnAction_home_Receive" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center">
+        <button onclick="selectSkill('home', 'Receive')" id="btnAction_home_Receive" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center transition-all opacity-70">
           Receive
         </button>
-        <button onclick="selectSkill('home', 'Attack')" id="btnAction_home_Attack" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center">
+        <button onclick="selectSkill('home', 'Attack')" id="btnAction_home_Attack" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center transition-all opacity-70">
           Attack
         </button>
-        <button onclick="selectSkill('home', 'Block')" id="btnAction_home_Block" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center">
+        <button onclick="selectSkill('home', 'Block')" id="btnAction_home_Block" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center transition-all opacity-70">
           Block
         </button>
-        <button onclick="selectSkill('home', 'Opposite Error')" id="btnAction_home_Opposite_Error" class="touch-press flex-1 rounded-xl text-[11px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center leading-tight text-center">
+        <button onclick="selectSkill('home', 'Opposite Error')" id="btnAction_home_Opposite_Error" class="touch-press flex-1 rounded-xl text-[11px] font-black bg-cyan-600 text-white border border-cyan-400 shadow-md flex items-center justify-center leading-tight text-center transition-all opacity-70">
           Opp Error
         </button>
       </div>
@@ -376,19 +376,19 @@
 
       <!-- Away Action Buttons (Crimson) -->
       <div class="col-span-1 flex flex-col justify-between gap-1.5">
-        <button onclick="selectSkill('away', 'Serve')" id="btnAction_away_Serve" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center">
+        <button onclick="selectSkill('away', 'Serve')" id="btnAction_away_Serve" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center transition-all opacity-70">
           Serve
         </button>
-        <button onclick="selectSkill('away', 'Receive')" id="btnAction_away_Receive" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center">
+        <button onclick="selectSkill('away', 'Receive')" id="btnAction_away_Receive" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center transition-all opacity-70">
           Receive
         </button>
-        <button onclick="selectSkill('away', 'Attack')" id="btnAction_away_Attack" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center">
+        <button onclick="selectSkill('away', 'Attack')" id="btnAction_away_Attack" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center transition-all opacity-70">
           Attack
         </button>
-        <button onclick="selectSkill('away', 'Block')" id="btnAction_away_Block" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center">
+        <button onclick="selectSkill('away', 'Block')" id="btnAction_away_Block" class="touch-press flex-1 rounded-xl text-[13px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center transition-all opacity-70">
           Block
         </button>
-        <button onclick="selectSkill('away', 'Opposite Error')" id="btnAction_away_Opposite_Error" class="touch-press flex-1 rounded-xl text-[11px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center leading-tight text-center">
+        <button onclick="selectSkill('away', 'Opposite Error')" id="btnAction_away_Opposite_Error" class="touch-press flex-1 rounded-xl text-[11px] font-black bg-rose-600 text-white border border-rose-400 shadow-md flex items-center justify-center leading-tight text-center transition-all opacity-70">
           Opp Error
         </button>
       </div>
@@ -435,7 +435,7 @@
       <div id="detailedTabsRow" class="hidden flex items-center gap-1 overflow-x-auto hide-scrollbar pt-2">
         <button onclick="switchDetailedCategory('all')" id="btnDetailTab_all" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-cyan-600 text-white shrink-0">All Skills</button>
         <button onclick="switchDetailedCategory('attack')" id="btnDetailTab_attack" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Attack (Eff%)</button>
-        <button onclick="switchDetailedCategory('serve_rec')" id="btnDetailTab_serve_rec" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Serve & Rec (A–E)</button>
+        <button onclick="switchDetailedCategory('serve_rec')" id="btnDetailTab_serve_rec" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Serve & Rec</button>
         <button onclick="switchDetailedCategory('block')" id="btnDetailTab_block" class="touch-press px-2.5 py-1 rounded-lg text-[10px] font-bold border border-slate-700 bg-slate-800 text-slate-300 shrink-0">Block & Touch</button>
       </div>
 
@@ -445,7 +445,7 @@
         <div class="mb-4">
           <h4 id="statsHomeTeamHeader" class="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-1">Home Team Stats</h4>
           <div class="overflow-x-auto hide-scrollbar rounded-xl border border-slate-800 bg-slate-950/70 p-1">
-            <table class="w-full text-left text-[11px] text-slate-300 font-mono">
+            <table class="w-full text-left text-[11px] text-slate-300 font-mono whitespace-nowrap">
               <thead class="bg-slate-950 text-slate-400 border-b border-slate-800" id="homeStatsTableHeader"></thead>
               <tbody id="homeStatsTableBody" class="divide-y divide-slate-800/80"></tbody>
               <tfoot id="homeStatsTableFoot" class="border-t-2 border-slate-700 bg-slate-900/80 font-bold text-white"></tfoot>
@@ -457,7 +457,7 @@
         <div>
           <h4 id="statsAwayTeamHeader" class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-1">Away Team Stats</h4>
           <div class="overflow-x-auto hide-scrollbar rounded-xl border border-slate-800 bg-slate-950/70 p-1">
-            <table class="w-full text-left text-[11px] text-slate-300 font-mono">
+            <table class="w-full text-left text-[11px] text-slate-300 font-mono whitespace-nowrap">
               <thead class="bg-slate-950 text-slate-400 border-b border-slate-800" id="awayStatsTableHeader"></thead>
               <tbody id="awayStatsTableBody" class="divide-y divide-slate-800/80"></tbody>
               <tfoot id="awayStatsTableFoot" class="border-t-2 border-slate-700 bg-slate-900/80 font-bold text-white"></tfoot>
@@ -670,9 +670,9 @@
         { label: 'Error (+1 Opp)', bg: 'bg-rose-600', text: 'text-white', colSpan: 2 }
       ],
       'Receive': [
-        { label: 'A • Perfect (3)', bg: 'bg-emerald-600', text: 'text-white' },
-        { label: 'B • Positive (2)', bg: 'bg-lime-600', text: 'text-white' },
-        { label: 'C • Medium (1)', bg: 'bg-amber-500', text: 'text-slate-950' },
+        { label: 'A • Perfect', bg: 'bg-emerald-600', text: 'text-white' },
+        { label: 'B • Positive', bg: 'bg-lime-600', text: 'text-white' },
+        { label: 'C • Medium', bg: 'bg-amber-500', text: 'text-slate-950' },
         { label: 'D • Poor', bg: 'bg-orange-500', text: 'text-white' },
         { label: 'E • Error', bg: 'bg-rose-600', text: 'text-white', colSpan: 2 }
       ],
@@ -847,16 +847,16 @@
         }
       });
 
-      // Action Buttons Highlights
+      // Action Buttons Highlights - strictly using border styling to prevent size changes
       ['home','away'].forEach(t => {
         ['Serve','Receive','Attack','Block','Opposite_Error'].forEach(s => {
           let btn = document.getElementById(`btnAction_${t}_${s}`);
           if(!btn) return;
           if (t === activeSelection.team && s.replace('_', ' ') === activeSelection.skill) {
             btn.classList.add('ring-2', 'ring-white', 'z-10');
-            btn.classList.remove('opacity-70', 'scale-105');
+            btn.classList.remove('opacity-70');
           } else {
-            btn.classList.remove('ring-2', 'ring-white', 'z-10', 'scale-105');
+            btn.classList.remove('ring-2', 'ring-white', 'z-10');
             btn.classList.add('opacity-70');
           }
         });
@@ -942,6 +942,8 @@
       } else {
          if (outcome.includes('(+1 Pt)')) pointToTeam = true;
          // Note: Receive Error (E) DOES NOT award opponent points anymore.
+         // Note: Attack 'Blocked' DOES NOT include (+1 Opp) anymore. 
+         // Opp points are only auto-awarded if the label literally contains '(+1 Opp)'.
          if (outcome.includes('(+1 Opp)') && skill !== 'Receive') pointToOpponent = true;
       }
 
@@ -970,7 +972,7 @@
         if (outcome.startsWith('B')) stats.recB++;
         if (outcome.startsWith('C')) stats.recC++;
         if (outcome.startsWith('D')) stats.recD++;
-        if (outcome.startsWith('E')) stats.recE++; // Error logged, but no points assigned.
+        if (outcome.startsWith('E')) stats.recE++;
       }
       else if (skill === 'Attack') {
         stats.attackAtt++;
@@ -1109,7 +1111,7 @@
         if (activeLibero[team].onCourt && activeLibero[team].replacedPosition === i) continue;
 
         let btn = document.createElement('button');
-        btn.innerText = `P${i}: #${jNum}`;
+        btn.innerText = `Pos ${i}: #${jNum}`;
         btn.className = "px-2 py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 text-[11px] font-bold";
         btn.onclick = (e) => {
           Array.from(grid.children).forEach(c => {
@@ -1349,14 +1351,19 @@
       teamNames.away = document.getElementById('inputLineupAwayName').value || "AWAY TEAM";
       
       ['home','away'].forEach(t => {
-        // Clear independent sets so they don't leak
-        playerJerseys[t] = new Set();
+        // NOTE: We no longer clear playerJerseys[t]. This ensures players from set 1
+        // are retained in memory even if they are not starters in set 2.
         
         for(let i=1; i<=6; i++) {
           let val = parseInt(document.getElementById(`setup_${t}_${i}`).value);
           if(!isNaN(val)) {
             lineups[t][i] = val;
-            playerJerseys[t].add(val);
+            playerJerseys[t].add(val); // Keep adding to the master roster memory
+            
+            // Critical Fix: If a libero is actively replacing this position, update their memory of who they replaced!
+            if (activeLibero[t].onCourt && activeLibero[t].replacedPosition === i) {
+               activeLibero[t].replacedJersey = val;
+            }
           }
         }
         
@@ -1466,7 +1473,7 @@
         
         thead.innerHTML = ''; tbody.innerHTML = ''; tfoot.innerHTML = '';
 
-        // Filter out players with zero stats, and SORT them numerically
+        // Filter out players with zero stats, and STRICTLY SORT them numerically (a - b)
         let activeJerseys = Array.from(playerJerseys[team]).sort((a, b) => a - b).filter(j => {
            let st = getAggregatedStats(team, j);
            let totalActions = st.points + st.attackAtt + st.serveAtt + (st.recA+st.recB+st.recC+st.recD+st.recE) + (st.blocks+st.blockErr+st.blockReb+st.blockTouch);
@@ -1485,7 +1492,7 @@
         teamTot.points += teamTot.oppErrorPoints;
 
         if (currentStatsView === 'summary') {
-          thead.innerHTML = `<tr><th class="p-1">#</th><th class="p-1">Pts</th><th class="p-1">Kill</th><th class="p-1">Ace</th><th class="p-1">Blk</th><th class="p-1">Rec(A-E)</th><th class="p-1">Pos%</th></tr>`;
+          thead.innerHTML = `<tr><th class="p-1">#</th><th class="p-1">Pts</th><th class="p-1">Kill</th><th class="p-1">Ace</th><th class="p-1">Blk</th><th class="p-1">Rec</th><th class="p-1">Pos%</th></tr>`;
           
           activeJerseys.forEach(j => {
             let s = getAggregatedStats(team, j);
@@ -1573,7 +1580,7 @@
 
       ['home', 'away'].forEach(team => {
         let tName = teamNames[team];
-        // Filter out zero stat players and SORT them numerically
+        // STRICTLY SORT numeric jersey values
         let activeJerseys = Array.from(playerJerseys[team]).sort((a, b) => a - b).filter(j => {
            let st = getAggregatedStats(team, j);
            return (st.points + st.attackAtt + st.serveAtt + st.recA + st.recB + st.recC + st.recD + st.recE + st.blocks + st.blockErr + st.blockReb + st.blockTouch) > 0;
